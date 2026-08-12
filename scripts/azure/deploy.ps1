@@ -122,7 +122,13 @@ $destructiveChanges = @($whatIfChanges | Where-Object { $_.changeType -eq 'Delet
 if ($destructiveChanges.Count -gt 0) {
   throw 'Subscription what-if contains a destructive deletion; deployment stopped.'
 }
-$actualTypes = @($whatIfChanges | ForEach-Object { $_.resourceId -replace '^.*/providers/([^/]+/[^/]+).*$','$1' } | Sort-Object -Unique)
+$actualTypes = @($whatIfChanges | ForEach-Object {
+  if ($null -ne $_.after -and $_.after.PSObject.Properties.Name -contains 'type') {
+    $_.after.type
+  } elseif ($null -ne $_.before -and $_.before.PSObject.Properties.Name -contains 'type') {
+    $_.before.type
+  }
+} | Where-Object { $_ } | Sort-Object -Unique)
 $unexpected = @($actualTypes | Where-Object { $_ -and $_ -notin $expectedTypes })
 if ($unexpected.Count -gt 0) {
   throw "What-if contains unexpected resource types: $($unexpected -join ', ')"
