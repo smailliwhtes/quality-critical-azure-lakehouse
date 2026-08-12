@@ -374,7 +374,7 @@ if (-not (Test-DatabricksObject @('storage-credentials', 'get', $credentialName)
     comment = 'Part 4 synthetic lakehouse Access Connector credential.'
   } | ConvertTo-Json -Depth 10))
   $null = Invoke-ExternalJson -Command $databricks -Arguments @(
-    'storage-credentials', 'create', $credentialName, '--json', "@$credentialPath", '-o', 'json'
+    'storage-credentials', 'create', '--json', "@$credentialPath", '-o', 'json'
   ) -FailureMessage 'Unity Catalog storage credential creation failed.'
 }
 $containers = @('managed', 'source', 'landing', 'quarantine', 'checkpoints', 'evidence')
@@ -441,7 +441,7 @@ if (-not (Test-DatabricksObject @('secrets', 'list-secrets', $databricksScope)))
     }
   } | ConvertTo-Json -Depth 10))
   $scope = Invoke-ExternalJson -Command $databricks -Arguments @(
-    'secrets', 'create-scope', $databricksScope, '--json', "@$scopePath", '-o', 'json'
+    'secrets', 'create-scope', '--json', "@$scopePath", '-o', 'json'
   ) -FailureMessage 'IGNORE' -AllowFailure
   if ($null -ne $scope -or (Test-DatabricksObject @('secrets', 'list-secrets', $databricksScope))) {
     $secretBackend = 'AZURE_KEYVAULT'
@@ -552,13 +552,14 @@ if (-not $performanceJobId) { throw 'The deployed performance job was not found.
 function Start-LakehouseRun([string]$IncidentMode) {
   $requestPath = Join-Path $privateRoot "lakehouse-run-$IncidentMode.json"
   [IO.File]::WriteAllText($requestPath, (@{
+    job_id = $lakehouseJobId
     job_parameters = @{
       incident_mode = $IncidentMode
       execution_commit = $ExecutionCommit
     }
   } | ConvertTo-Json -Depth 10))
   $submission = Invoke-ExternalJson -Command $databricks -Arguments @(
-    'jobs', 'run-now', "$lakehouseJobId", '--json', "@$requestPath", '--no-wait', '-o', 'json'
+    'jobs', 'run-now', '--json', "@$requestPath", '--no-wait', '-o', 'json'
   ) -FailureMessage 'Lakehouse job submission failed.'
   return [long]$submission.run_id
 }
@@ -600,6 +601,7 @@ Write-PublicJson 'lakeflow-controlled-incident.json' ([ordered]@{
 Write-Host 'Repairing only the affected Bronze path and its downstream dependencies.'
 $repairRequestPath = Join-Path $privateRoot 'lakehouse-repair.json'
 [IO.File]::WriteAllText($repairRequestPath, (@{
+  run_id = $incidentRunId
   rerun_tasks = @('bronze_batch')
   rerun_dependent_tasks = $true
   job_parameters = @{
@@ -608,7 +610,7 @@ $repairRequestPath = Join-Path $privateRoot 'lakehouse-repair.json'
   }
 } | ConvertTo-Json -Depth 10))
 $repairSubmission = Invoke-ExternalJson -Command $databricks -Arguments @(
-  'jobs', 'repair-run', "$incidentRunId", '--json', "@$repairRequestPath", '--no-wait', '-o', 'json'
+  'jobs', 'repair-run', '--json', "@$repairRequestPath", '--no-wait', '-o', 'json'
 ) -FailureMessage 'Lakeflow repair submission failed.'
 $repairId = [int]$repairSubmission.repair_id
 Start-Sleep -Seconds 10
