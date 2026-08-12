@@ -159,6 +159,14 @@ def test_job_entrypoints_are_present_and_keep_logic_in_reusable_modules() -> Non
     assert "duplicate_business_keys" in receipt
 
 
+def test_preflight_validates_preprovisioned_unity_catalog_without_recreating_it() -> None:
+    preflight = (ROOT / "pipelines/jobs/preflight.py").read_text(encoding="utf-8")
+
+    assert "CREATE CATALOG" not in preflight
+    assert "SHOW SCHEMAS IN" in preflight
+    assert "missing required schemas" in preflight
+
+
 def test_each_gold_object_has_grain_and_validation_sql() -> None:
     contract = (ROOT / "sql/gold/table_contracts.yml").read_text(encoding="utf-8")
     validation = (ROOT / "sql/gold/validate_gold.sql").read_text(encoding="utf-8")
