@@ -1,0 +1,8 @@
+{
+  "policy": "TRIAL_ONLY_NO_PAID_FALLBACK",
+  "schema": "part4-trial-gate/v1",
+  "status": "PASS",
+  "captured_at_utc": "2026-08-12T15:57:48.2954405Z",
+  "workspace_sku": "trial",
+  "location": "eastus2"
+}

@@ -11,7 +11,12 @@ import pytest
 @pytest.fixture(scope="session")
 def spark():
     project_root = Path(__file__).resolve().parents[1]
-    java_home = next((project_root / ".tools" / "java").glob("jdk-17*"))
+    configured_java_home = os.environ.get("JAVA_HOME")
+    java_home = Path(configured_java_home) if configured_java_home else next(
+        (project_root / ".tools" / "java").glob("jdk-17*"), None
+    )
+    if java_home is None or not (java_home / "bin").is_dir():
+        raise RuntimeError("JDK 17 is required through JAVA_HOME or .tools/java/jdk-17*")
     os.environ["JAVA_HOME"] = str(java_home)
     os.environ["PATH"] = f"{java_home / 'bin'}{os.pathsep}{os.environ['PATH']}"
     worker_python = Path(sys.executable)
