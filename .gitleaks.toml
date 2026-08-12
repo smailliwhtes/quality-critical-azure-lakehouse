@@ -1,0 +1,13 @@
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Exclude local dependency runtimes and regenerated build output; source remains scanned."
+paths = [
+  '''(^|[\\/])\.tools[\\/]''',
+  '''(^|[\\/])\.venv[\\/]''',
+  '''(^|[\\/])node_modules[\\/]''',
+  '''(^|[\\/])dist[\\/]''',
+  '''(^|[\\/])rendered[\\/]''',
+  '''(^|[\\/])tmp[\\/]'''
+]

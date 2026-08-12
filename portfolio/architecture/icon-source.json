@@ -1,0 +1,10 @@
+{
+  "publisher": "Microsoft",
+  "source_page": "https://learn.microsoft.com/en-us/azure/architecture/icons/",
+  "archive": "Azure_Public_Service_Icons_V24.zip",
+  "download_url": "https://arch-center.azureedge.net/icons/Azure_Public_Service_Icons_V24.zip",
+  "archive_sha256": "921594ccd1bf3d9c0a1bd7b6d924e050551a59342f2b353bb74bdcf761c35141",
+  "downloaded_at_utc": "2026-08-12T00:00:00Z",
+  "icons_modified": false,
+  "usage": "The unmodified service SVG files are placed at uniform scale inside the original architecture composition."
+}

@@ -1,0 +1,15 @@
+{
+  "name": "ls_github_http",
+  "properties": {
+    "annotations": [
+      "Pinned immutable synthetic source"
+    ],
+    "type": "HttpServer",
+    "typeProperties": {
+      "authenticationType": "Anonymous",
+      "enableServerCertificateValidation": true,
+      "url": "https://raw.githubusercontent.com/smailliwhtes/quality-critical-azure-lakehouse/836901141adce556adec1811d132127953d52c9b/data/synthetic/quality/"
+    }
+  }
+}
+

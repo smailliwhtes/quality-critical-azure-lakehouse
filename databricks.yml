@@ -1,0 +1,254 @@
+bundle:
+  name: quality-critical-azure-lakehouse
+
+sync:
+  include:
+    - src/**
+    - pipelines/**
+    - sql/**
+
+variables:
+  catalog:
+    default: part4_ops
+  node_type_id:
+    default: Standard_DS3_v2
+  spark_version:
+    description: Exact newest stable LTS runtime discovered from the Trial workspace.
+    default: AUTO_LTS_DISCOVERY_REQUIRED
+  storage_account_name:
+    default: STORAGE_DISCOVERY_REQUIRED
+  event_hubs_namespace:
+    default: EVENT_HUBS_DISCOVERY_REQUIRED
+  event_hub_name:
+    default: quality-telemetry
+  execution_commit:
+    default: COMMIT_DISCOVERY_REQUIRED
+
+resources:
+  pipelines:
+    quality_pipeline:
+      name: part4-quality-gate
+      catalog: ${var.catalog}
+      schema: silver
+      continuous: false
+      development: true
+      channel: CURRENT
+      configuration:
+        part4.catalog: ${var.catalog}
+      libraries:
+        - file:
+            path: ./pipelines/lakeflow/quality_pipeline.py
+      clusters:
+        - label: default
+          node_type_id: Standard_DS2_v2
+          num_workers: 0
+          spark_conf:
+            spark.databricks.cluster.profile: singleNode
+            spark.master: local[*, 2]
+            spark.sql.session.timeZone: UTC
+          custom_tags:
+            ResourceClass: SingleNode
+            project: linkedin-part4
+    scd2_pipeline:
+      name: part4-auto-cdc-scd2
+      catalog: ${var.catalog}
+      schema: silver
+      continuous: false
+      development: true
+      channel: CURRENT
+      configuration:
+        part4.catalog: ${var.catalog}
+      libraries:
+        - file:
+            path: ./pipelines/lakeflow/scd2_auto_cdc.py
+      clusters:
+        - label: default
+          node_type_id: Standard_DS2_v2
+          num_workers: 0
+          spark_conf:
+            spark.databricks.cluster.profile: singleNode
+            spark.master: local[*, 2]
+            spark.sql.session.timeZone: UTC
+          custom_tags:
+            ResourceClass: SingleNode
+            project: linkedin-part4
+
+  jobs:
+    part4_lakehouse_job:
+      name: part4-quality-critical-lakehouse
+      max_concurrent_runs: 1
+      timeout_seconds: 7200
+      job_clusters:
+        - job_cluster_key: part4_job_cluster
+          new_cluster:
+            spark_version: ${var.spark_version}
+            node_type_id: Standard_DS3_v2
+            num_workers: 1
+            autotermination_minutes: 10
+            data_security_mode: USER_ISOLATION
+            runtime_engine: STANDARD
+            spark_conf:
+              spark.sql.session.timeZone: UTC
+              spark.databricks.delta.schema.autoMerge.enabled: "false"
+            custom_tags:
+              project: linkedin-part4
+              purpose: portfolio
+      parameters:
+        - name: catalog
+          default: ${var.catalog}
+        - name: storage_account_name
+          default: ${var.storage_account_name}
+        - name: event_hubs_namespace
+          default: ${var.event_hubs_namespace}
+        - name: event_hub_name
+          default: ${var.event_hub_name}
+        - name: incident_mode
+          default: "false"
+        - name: secret_scope
+          default: part4-key-vault
+        - name: execution_commit
+          default: ${var.execution_commit}
+      tasks:
+        - task_key: preflight
+          job_cluster_key: part4_job_cluster
+          spark_python_task:
+            python_file: ./pipelines/jobs/preflight.py
+            parameters:
+              - --catalog
+              - "{{job.parameters.catalog}}"
+        - task_key: verify_batch_landing
+          depends_on:
+            - task_key: preflight
+          job_cluster_key: part4_job_cluster
+          spark_python_task:
+            python_file: ./pipelines/jobs/verify_batch_landing.py
+            parameters:
+              - --catalog
+              - "{{job.parameters.catalog}}"
+              - --storage-account-name
+              - "{{job.parameters.storage_account_name}}"
+        - task_key: bronze_batch
+          depends_on:
+            - task_key: verify_batch_landing
+          job_cluster_key: part4_job_cluster
+          spark_python_task:
+            python_file: ./pipelines/jobs/bronze_batch.py
+            parameters:
+              - --catalog
+              - "{{job.parameters.catalog}}"
+              - --storage-account-name
+              - "{{job.parameters.storage_account_name}}"
+              - --incident-mode
+              - "{{job.parameters.incident_mode}}"
+        - task_key: bronze_stream
+          depends_on:
+            - task_key: verify_batch_landing
+          job_cluster_key: part4_job_cluster
+          spark_python_task:
+            python_file: ./pipelines/jobs/bronze_stream.py
+            parameters:
+              - --catalog
+              - "{{job.parameters.catalog}}"
+              - --event-hubs-namespace
+              - "{{job.parameters.event_hubs_namespace}}"
+              - --event-hub-name
+              - "{{job.parameters.event_hub_name}}"
+              - --storage-account-name
+              - "{{job.parameters.storage_account_name}}"
+              - --secret-scope
+              - "{{job.parameters.secret_scope}}"
+        - task_key: quality_gate
+          depends_on:
+            - task_key: bronze_batch
+            - task_key: bronze_stream
+          pipeline_task:
+            pipeline_id: ${resources.pipelines.quality_pipeline.id}
+            full_refresh: false
+        - task_key: silver_transform
+          depends_on:
+            - task_key: quality_gate
+          job_cluster_key: part4_job_cluster
+          spark_python_task:
+            python_file: ./pipelines/jobs/silver_transform.py
+            parameters:
+              - --catalog
+              - "{{job.parameters.catalog}}"
+              - --incident-mode
+              - "{{job.parameters.incident_mode}}"
+        - task_key: scd2_history
+          depends_on:
+            - task_key: quality_gate
+          pipeline_task:
+            pipeline_id: ${resources.pipelines.scd2_pipeline.id}
+            full_refresh: true
+        - task_key: gold_publish
+          depends_on:
+            - task_key: silver_transform
+            - task_key: scd2_history
+          job_cluster_key: part4_job_cluster
+          spark_python_task:
+            python_file: ./pipelines/jobs/gold_publish.py
+            parameters:
+              - --catalog
+              - "{{job.parameters.catalog}}"
+        - task_key: validation
+          depends_on:
+            - task_key: gold_publish
+          job_cluster_key: part4_job_cluster
+          spark_python_task:
+            python_file: ./pipelines/jobs/validation.py
+            parameters:
+              - --catalog
+              - "{{job.parameters.catalog}}"
+        - task_key: evidence_receipt
+          depends_on:
+            - task_key: validation
+          job_cluster_key: part4_job_cluster
+          spark_python_task:
+            python_file: ./pipelines/jobs/evidence_receipt.py
+            parameters:
+              - --catalog
+              - "{{job.parameters.catalog}}"
+              - --execution-commit
+              - "{{job.parameters.execution_commit}}"
+    part4_performance_job:
+      name: part4-spark-performance-comparison
+      max_concurrent_runs: 1
+      timeout_seconds: 3600
+      job_clusters:
+        - job_cluster_key: part4_performance_cluster
+          new_cluster:
+            spark_version: ${var.spark_version}
+            node_type_id: Standard_DS3_v2
+            num_workers: 1
+            autotermination_minutes: 10
+            data_security_mode: USER_ISOLATION
+            runtime_engine: STANDARD
+            spark_conf:
+              spark.sql.session.timeZone: UTC
+            custom_tags:
+              project: linkedin-part4
+              purpose: performance-evidence
+      tasks:
+        - task_key: compare_baseline_and_broadcast
+          job_cluster_key: part4_performance_cluster
+          spark_python_task:
+            python_file: ./pipelines/jobs/performance_benchmark.py
+            parameters:
+              - --catalog
+              - ${var.catalog}
+              - --row-count
+              - "5000000"
+              - --iterations
+              - "3"
+              - --partition-count
+              - "64"
+              - --execution-commit
+              - ${var.execution_commit}
+
+targets:
+  dev:
+    mode: development
+    default: true
+    workspace:
+      root_path: /Workspace/Users/${workspace.current_user.userName}/.bundle/${bundle.name}/${bundle.target}

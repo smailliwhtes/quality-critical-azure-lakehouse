@@ -1,0 +1,57 @@
+name: Controlled Azure deployment
+
+on:
+  workflow_dispatch:
+    inputs:
+      operation:
+        description: Approved bounded operation
+        required: true
+        type: choice
+        options:
+          - deploy-run-collect
+          - teardown
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: part4-controlled-cloud
+  cancel-in-progress: false
+
+jobs:
+  operate:
+    runs-on: ubuntu-latest
+    environment: part4-deployment
+    env:
+      PART4_BUDGET_USD: ${{ vars.PART4_BUDGET_USD || '20' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: '3.12'
+      - uses: databricks/setup-cli@v1.11.0
+      - name: Install project runtime
+        run: uv sync --extra dev
+      - name: Authenticate with federated Azure identity
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      - name: Deploy, run, and collect
+        if: ${{ inputs.operation == 'deploy-run-collect' }}
+        shell: pwsh
+        run: ./scripts/azure/deploy.ps1
+      - name: Teardown isolated resources
+        if: ${{ inputs.operation == 'teardown' }}
+        shell: pwsh
+        run: ./scripts/azure/teardown.ps1
+      - name: Persist sanitized operation receipts
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: part4-${{ inputs.operation }}-receipts
+          path: evidence/public/receipts
+          if-no-files-found: warn
+          retention-days: 30

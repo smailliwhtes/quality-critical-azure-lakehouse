@@ -1,0 +1,25 @@
+{
+  "schema": "part4-expected-resource-types/v1",
+  "resource_types": [
+    "Microsoft.Authorization/roleAssignments",
+    "Microsoft.Consumption/budgets",
+    "Microsoft.DataFactory/factories",
+    "Microsoft.Databricks/accessConnectors",
+    "Microsoft.Databricks/workspaces",
+    "Microsoft.EventHub/namespaces",
+    "Microsoft.EventHub/namespaces/eventhubs",
+    "Microsoft.EventHub/namespaces/eventhubs/authorizationRules",
+    "Microsoft.Insights/activityLogAlerts",
+    "Microsoft.Insights/diagnosticSettings",
+    "Microsoft.KeyVault/vaults",
+    "Microsoft.ManagedIdentity/userAssignedIdentities",
+    "Microsoft.ManagedIdentity/userAssignedIdentities/federatedIdentityCredentials",
+    "Microsoft.OperationalInsights/workspaces",
+    "Microsoft.Resources/deployments",
+    "Microsoft.Resources/resourceGroups",
+    "Microsoft.Storage/storageAccounts",
+    "Microsoft.Storage/storageAccounts/blobServices",
+    "Microsoft.Storage/storageAccounts/blobServices/containers"
+  ]
+}
+

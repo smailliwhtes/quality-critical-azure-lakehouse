@@ -1,0 +1,27 @@
+schema: part4-gold-table-contracts/v1
+objects:
+  fact_batch_quality:
+    grain: one quality measurement for one batch characteristic at one observation time
+    keys: [observation_id]
+    upstream: [part4_ops.silver.batch_quality_valid]
+  fact_cold_chain_excursion:
+    grain: one detected environmental excursion episode per batch and sensor interval
+    keys: [excursion_id]
+    upstream: [part4_ops.silver.sensor_telemetry_valid, part4_ops.silver.batch_master_current]
+  dim_batch_history:
+    grain: one effective SCD Type 2 version of one batch
+    keys: [batch_id, effective_start_utc]
+    upstream: [part4_ops.silver.batch_history_scd2]
+  dim_site:
+    grain: one synthetic manufacturing site
+    keys: [site_id]
+    upstream: [source.reference.sites]
+  dim_product:
+    grain: one synthetic quality-critical product
+    keys: [product_id]
+    upstream: [source.reference.products]
+  kpi_quality_summary:
+    grain: one site by product by reporting date
+    keys: [site_id, product_id, reporting_date]
+    upstream: [part4_ops.gold.fact_batch_quality, part4_ops.gold.fact_cold_chain_excursion]
+

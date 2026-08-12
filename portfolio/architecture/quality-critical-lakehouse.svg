@@ -1,0 +1,216 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1600" height="950" viewBox="0 0 1600 950" role="img" aria-labelledby="title desc">
+  <title id="title">Quality-Critical Azure Lakehouse architecture</title>
+  <desc id="desc">Batch files flow through Azure Data Factory and ADLS Gen2 while telemetry flows through Event Hubs and Structured Streaming. Azure Databricks and Lakeflow transform both paths through Bronze, Silver, and Gold under Unity Catalog, managed identity, monitoring, cost, and continuous delivery controls.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#081426"/>
+      <stop offset="0.52" stop-color="#0b1e34"/>
+      <stop offset="1" stop-color="#10243a"/>
+    </linearGradient>
+    <linearGradient id="bronze" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3e2b22"/>
+      <stop offset="1" stop-color="#241c1a"/>
+    </linearGradient>
+    <linearGradient id="silver" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#24364a"/>
+      <stop offset="1" stop-color="#182638"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#493a18"/>
+      <stop offset="1" stop-color="#2b2518"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#000814" flood-opacity="0.4"/>
+    </filter>
+    <marker id="arrow-blue" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#51a8ff"/>
+    </marker>
+    <marker id="arrow-teal" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#45dcc3"/>
+    </marker>
+    <style>
+      .title { font: 700 35px 'Segoe UI', Arial, sans-serif; fill: #f8fbff; letter-spacing: .2px; }
+      .subtitle { font: 400 17px 'Segoe UI', Arial, sans-serif; fill: #9db2c9; }
+      .eyebrow { font: 700 12px 'Segoe UI', Arial, sans-serif; fill: #58b3ff; letter-spacing: 2.4px; }
+      .lane { font: 700 13px 'Segoe UI', Arial, sans-serif; letter-spacing: 1.5px; }
+      .service { font: 700 16px 'Segoe UI', Arial, sans-serif; fill: #f3f8fd; }
+      .service-small { font: 600 14px 'Segoe UI', Arial, sans-serif; fill: #f3f8fd; }
+      .detail { font: 400 13px 'Segoe UI', Arial, sans-serif; fill: #9eb2c8; }
+      .layer { font: 700 20px 'Segoe UI', Arial, sans-serif; fill: #fff; letter-spacing: .4px; }
+      .layer-detail { font: 400 13px 'Segoe UI', Arial, sans-serif; fill: #c9d5e1; }
+      .control { font: 700 13px 'Segoe UI', Arial, sans-serif; fill: #f1f7fc; }
+      .control-detail { font: 400 11px 'Segoe UI', Arial, sans-serif; fill: #9fb2c6; }
+    </style>
+  </defs>
+
+  <rect width="1600" height="950" fill="url(#bg)"/>
+  <path d="M0 0H1600V950H0Z" fill="none" stroke="#1d3853" stroke-width="2"/>
+  <circle cx="1445" cy="82" r="230" fill="#0b6fca" opacity=".06"/>
+  <circle cx="154" cy="892" r="210" fill="#19bca5" opacity=".05"/>
+
+  <text x="72" y="64" class="eyebrow">PART 4 / AZURE DATA ENGINEERING</text>
+  <text x="72" y="112" class="title">Quality-Critical Azure Lakehouse</text>
+  <text x="72" y="145" class="subtitle">Batch quality + streaming telemetry → governed, traceable data products</text>
+  <g transform="translate(1282,56)">
+    <rect width="245" height="78" rx="15" fill="#102c47" stroke="#2d5575"/>
+    <text x="22" y="30" class="eyebrow" fill="#45dcc3">BOUNDED BUILD</text>
+    <text x="22" y="56" class="detail">Trial only · East US 2 · teardown-gated</text>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="72" y="190" width="1456" height="510" rx="24" fill="#0b1a2b" stroke="#29445e"/>
+  </g>
+  <line x1="72" y1="446" x2="1528" y2="446" stroke="#23435e" stroke-dasharray="6 8"/>
+
+  <g>
+    <rect x="93" y="210" width="118" height="28" rx="14" fill="#112f50"/>
+    <text x="112" y="230" class="lane" fill="#68baff">BATCH PATH</text>
+
+    <g transform="translate(104,275)">
+      <rect width="170" height="118" rx="17" fill="#10253a" stroke="#2a4a67"/>
+      <path d="M26 26h48v54H26z" fill="#18334d" stroke="#5ea8eb"/>
+      <path d="M36 41h28M36 52h28M36 63h20" stroke="#7fc2ff" stroke-width="3" stroke-linecap="round"/>
+      <text x="91" y="46" class="service-small">Batch files</text>
+      <text x="91" y="68" class="detail">Quality + CDC</text>
+      <text x="24" y="101" class="detail">Commit-pinned synthetic JSON</text>
+    </g>
+
+    <path d="M285 334H356" stroke="#51a8ff" stroke-width="3" marker-end="url(#arrow-blue)"/>
+    <g transform="translate(378,275)">
+      <rect width="174" height="118" rx="17" fill="#10253a" stroke="#2a4a67"/>
+      <image href="icons/data-factory.svg" x="20" y="18" width="54" height="54"/>
+      <text x="88" y="43" class="service-small">Data Factory</text>
+      <text x="88" y="65" class="detail">ForEach + Copy</text>
+      <text x="20" y="101" class="detail">Files · rows · bytes · run receipt</text>
+    </g>
+
+    <path d="M563 334H634" stroke="#51a8ff" stroke-width="3" marker-end="url(#arrow-blue)"/>
+    <g transform="translate(656,275)">
+      <rect width="175" height="118" rx="17" fill="#10253a" stroke="#2a4a67"/>
+      <image href="icons/storage-account.svg" x="20" y="18" width="54" height="54"/>
+      <text x="88" y="43" class="service-small">ADLS Gen2</text>
+      <text x="88" y="65" class="detail">Landing zone</text>
+      <text x="20" y="101" class="detail">HNS · TLS · managed identity</text>
+    </g>
+  </g>
+
+  <g>
+    <rect x="93" y="467" width="153" height="28" rx="14" fill="#123b3c"/>
+    <text x="111" y="487" class="lane" fill="#54e3cc">STREAMING PATH</text>
+
+    <g transform="translate(104,530)">
+      <rect width="170" height="118" rx="17" fill="#102b31" stroke="#28605e"/>
+      <circle cx="49" cy="48" r="28" fill="#173d42" stroke="#51d5c3"/>
+      <path d="M33 53c8-14 14 10 26-7 4-6 7-4 10-10" fill="none" stroke="#71ead8" stroke-width="3" stroke-linecap="round"/>
+      <text x="91" y="46" class="service-small">Producer</text>
+      <text x="91" y="68" class="detail">20,000 events</text>
+      <text x="24" y="101" class="detail">Seeded · bounded · reconciled</text>
+    </g>
+
+    <path d="M285 589H356" stroke="#45dcc3" stroke-width="3" marker-end="url(#arrow-teal)"/>
+    <g transform="translate(378,530)">
+      <rect width="174" height="118" rx="17" fill="#102b31" stroke="#28605e"/>
+      <image href="icons/event-hubs.svg" x="20" y="18" width="54" height="54"/>
+      <text x="88" y="43" class="service-small">Event Hubs</text>
+      <text x="88" y="65" class="detail">Standard · 1 TU</text>
+      <text x="20" y="101" class="detail">Kafka-compatible interface</text>
+    </g>
+
+    <path d="M563 589H634" stroke="#45dcc3" stroke-width="3" marker-end="url(#arrow-teal)"/>
+    <g transform="translate(656,530)">
+      <rect width="175" height="118" rx="17" fill="#102b31" stroke="#28605e"/>
+      <image href="icons/azure-databricks.svg" x="20" y="18" width="54" height="54"/>
+      <text x="88" y="43" class="service-small">Structured</text>
+      <text x="88" y="65" class="service-small">Streaming</text>
+      <text x="20" y="101" class="detail">Schema · checkpoint · Delta</text>
+    </g>
+  </g>
+
+  <g>
+    <path d="M842 334H895" stroke="#51a8ff" stroke-width="3" marker-end="url(#arrow-blue)"/>
+    <path d="M842 589H872Q878 589 878 583V358Q878 334 895 334" fill="none" stroke="#45dcc3" stroke-width="3" marker-end="url(#arrow-teal)"/>
+    <g transform="translate(916,242)">
+      <rect width="570" height="410" rx="20" fill="#0d2034" stroke="#31506c"/>
+      <image href="icons/azure-databricks.svg" x="26" y="24" width="58" height="58"/>
+      <text x="102" y="50" class="service">Azure Databricks + Lakeflow</text>
+      <text x="102" y="75" class="detail">PySpark · Delta Lake · Jobs · expectations · Unity Catalog</text>
+
+      <g transform="translate(25,112)">
+        <rect width="160" height="233" rx="16" fill="url(#bronze)" stroke="#a87350"/>
+        <text x="22" y="39" class="layer">BRONZE</text>
+        <text x="22" y="66" class="layer-detail">Source fidelity</text>
+        <line x1="22" y1="84" x2="138" y2="84" stroke="#80583e"/>
+        <text x="22" y="112" class="layer-detail">Batch raw</text>
+        <text x="22" y="137" class="layer-detail">CDC events</text>
+        <text x="22" y="162" class="layer-detail">Telemetry raw</text>
+        <text x="22" y="196" class="layer-detail">Run ID · hash</text>
+        <text x="22" y="217" class="layer-detail">schema version</text>
+      </g>
+      <path d="M195 467H222" stroke="#79a7cf" stroke-width="3" marker-end="url(#arrow-blue)" transform="translate(916,0)"/>
+      <g transform="translate(205,112)">
+        <rect width="160" height="233" rx="16" fill="url(#silver)" stroke="#6d91b2"/>
+        <text x="22" y="39" class="layer">SILVER</text>
+        <text x="22" y="66" class="layer-detail">Trust boundary</text>
+        <line x1="22" y1="84" x2="138" y2="84" stroke="#4d6a84"/>
+        <text x="22" y="112" class="layer-detail">Validate + conform</text>
+        <text x="22" y="137" class="layer-detail">Quarantine</text>
+        <text x="22" y="162" class="layer-detail">CDC + SCD2</text>
+        <text x="22" y="196" class="layer-detail">Keys · units</text>
+        <text x="22" y="217" class="layer-detail">one current row</text>
+      </g>
+      <path d="M375 467H402" stroke="#79a7cf" stroke-width="3" marker-end="url(#arrow-blue)" transform="translate(916,0)"/>
+      <g transform="translate(385,112)">
+        <rect width="160" height="233" rx="16" fill="url(#gold)" stroke="#c4a34b"/>
+        <text x="22" y="39" class="layer">GOLD</text>
+        <text x="22" y="66" class="layer-detail">Data products</text>
+        <line x1="22" y1="84" x2="138" y2="84" stroke="#7b6b38"/>
+        <text x="22" y="112" class="layer-detail">2 facts</text>
+        <text x="22" y="137" class="layer-detail">3 dimensions</text>
+        <text x="22" y="162" class="layer-detail">1 KPI output</text>
+        <text x="22" y="196" class="layer-detail">Grain · keys</text>
+        <text x="22" y="217" class="layer-detail">validation SQL</text>
+      </g>
+    </g>
+  </g>
+
+  <text x="72" y="752" class="eyebrow">CROSS-CUTTING CONTROL PLANE</text>
+  <g transform="translate(72,780)">
+    <g>
+      <rect width="260" height="112" rx="16" fill="#10253a" stroke="#2c4b66"/>
+      <image href="icons/managed-identities.svg" x="20" y="20" width="48" height="48"/>
+      <text x="82" y="38" class="control">Entra + managed identities</text>
+      <text x="82" y="59" class="control-detail">Access Connector · scoped RBAC</text>
+      <text x="20" y="91" class="control-detail">No storage keys in notebooks</text>
+    </g>
+    <g transform="translate(282,0)">
+      <rect width="220" height="112" rx="16" fill="#10253a" stroke="#2c4b66"/>
+      <image href="icons/key-vault.svg" x="20" y="20" width="48" height="48"/>
+      <text x="82" y="38" class="control">Key Vault</text>
+      <text x="82" y="59" class="control-detail">Event credential only</text>
+      <text x="20" y="91" class="control-detail">Values excluded from evidence</text>
+    </g>
+    <g transform="translate(524,0)">
+      <rect width="275" height="112" rx="16" fill="#10253a" stroke="#2c4b66"/>
+      <image href="icons/log-analytics.svg" x="20" y="20" width="48" height="48"/>
+      <text x="82" y="38" class="control">Monitor + Log Analytics</text>
+      <text x="82" y="59" class="control-detail">Diagnostics · KQL · alert</text>
+      <text x="20" y="91" class="control-detail">Cross-service operational evidence</text>
+    </g>
+    <g transform="translate(821,0)">
+      <rect width="265" height="112" rx="16" fill="#10253a" stroke="#2c4b66"/>
+      <rect x="20" y="20" width="48" height="48" rx="10" fill="#192f48" stroke="#52a9ef"/>
+      <path d="M32 44h24M44 32v24" stroke="#74bfff" stroke-width="3" stroke-linecap="round"/>
+      <text x="82" y="38" class="control">GitHub Actions + DABs</text>
+      <text x="82" y="59" class="control-detail">OIDC · CI · deploy · receipts</text>
+      <text x="20" y="91" class="control-detail">Commit-bound execution</text>
+    </g>
+    <g transform="translate(1108,0)">
+      <rect width="348" height="112" rx="16" fill="#10253a" stroke="#2c4b66"/>
+      <image href="icons/cost-management.svg" x="20" y="20" width="48" height="48"/>
+      <text x="82" y="38" class="control">Cost + lifecycle controls</text>
+      <text x="82" y="59" class="control-detail">Target &lt;$10 · stop retries $15 · teardown $20</text>
+      <text x="20" y="91" class="control-detail">Ephemeral compute · authoritative deletion readback</text>
+    </g>
+  </g>
+  <text x="1528" y="928" text-anchor="end" class="detail">Michael Seth Williams · Azure Data Engineering Portfolio</text>
+</svg>

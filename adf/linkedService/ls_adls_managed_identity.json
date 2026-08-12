@@ -1,0 +1,19 @@
+{
+  "name": "ls_adls_managed_identity",
+  "properties": {
+    "annotations": [
+      "System-assigned managed identity"
+    ],
+    "parameters": {
+      "storageAccountName": {
+        "type": "String"
+      }
+    },
+    "type": "AzureBlobFS",
+    "typeProperties": {
+      "accountUrl": "@{concat('https://', linkedService().storageAccountName, '.dfs.core.windows.net')}",
+      "authentication": "ManagedIdentity"
+    }
+  }
+}
+

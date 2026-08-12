@@ -15,6 +15,7 @@ from typing import Any
 
 from qcal.evidence import load_manifest, validate_manifest
 from qcal.gates import evaluate_cost_gate
+from qcal.producer import emit_bounded_telemetry
 from qcal.synthetic import SyntheticDataConfig, generate_synthetic_dataset
 
 
@@ -119,6 +120,16 @@ def _parser() -> argparse.ArgumentParser:
     preflight.add_argument(
         "--output", type=Path, default=Path("evidence/public/receipts/preflight.json")
     )
+
+    produce = subcommands.add_parser("send-telemetry")
+    produce.add_argument(
+        "--source", type=Path, default=Path("data/synthetic/event_hubs/sensor_messages.jsonl")
+    )
+    produce.add_argument("--event-hub-name", default="quality-telemetry")
+    produce.add_argument("--message-limit", type=int, default=20_000)
+    produce.add_argument(
+        "--receipt", type=Path, default=Path("evidence/private/streaming-producer.json")
+    )
     return parser
 
 
@@ -144,6 +155,25 @@ def main(argv: list[str] | None = None) -> int:
         receipt = build_preflight_receipt(root)
         _write_json(args.output, receipt)
         print(f"Wrote {args.output}")
+        return 0
+    if args.command == "send-telemetry":
+        connection_string = os.getenv("EVENT_HUB_CONNECTION_STRING", "")
+        receipt = emit_bounded_telemetry(
+            connection_string=connection_string,
+            event_hub_name=args.event_hub_name,
+            source_path=args.source,
+            message_limit=args.message_limit,
+            receipt_path=args.receipt,
+        )
+        print(
+            json.dumps(
+                {
+                    "events_emitted": receipt["events_emitted"],
+                    "receipt": str(args.receipt),
+                },
+                indent=2,
+            )
+        )
         return 0
     raise AssertionError(f"Unhandled command: {args.command}")
 

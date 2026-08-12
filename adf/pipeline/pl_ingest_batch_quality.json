@@ -1,0 +1,144 @@
+{
+  "name": "pl_ingest_batch_quality",
+  "properties": {
+    "activities": [
+      {
+        "name": "ForEachQualityFile",
+        "type": "ForEach",
+        "dependsOn": [],
+        "userProperties": [
+          {
+            "name": "sourceCommit",
+            "value": "836901141adce556adec1811d132127953d52c9b"
+          }
+        ],
+        "typeProperties": {
+          "batchCount": 4,
+          "isSequential": false,
+          "items": {
+            "type": "Expression",
+            "value": "@pipeline().parameters.sourceFiles"
+          },
+          "activities": [
+            {
+              "name": "CopyQualityJson",
+              "type": "Copy",
+              "dependsOn": [],
+              "policy": {
+                "retry": 1,
+                "retryIntervalInSeconds": 15,
+                "secureInput": false,
+                "secureOutput": false,
+                "timeout": "0.00:10:00"
+              },
+              "userProperties": [
+                {
+                  "name": "sourceFile",
+                  "value": "@item()"
+                },
+                {
+                  "name": "targetPath",
+                  "value": "@concat(pipeline().parameters.landingDirectory, '/', item())"
+                }
+              ],
+              "typeProperties": {
+                "source": {
+                  "type": "JsonSource",
+                  "storeSettings": {
+                    "type": "HttpReadSettings",
+                    "requestMethod": "GET"
+                  },
+                  "formatSettings": {
+                    "type": "JsonReadSettings"
+                  }
+                },
+                "sink": {
+                  "type": "JsonSink",
+                  "storeSettings": {
+                    "type": "AzureBlobFSWriteSettings",
+                    "copyBehavior": "PreserveHierarchy"
+                  },
+                  "formatSettings": {
+                    "type": "JsonWriteSettings",
+                    "filePattern": "setOfObjects"
+                  }
+                },
+                "enableStaging": false,
+                "validateDataConsistency": true
+              },
+              "inputs": [
+                {
+                  "parameters": {
+                    "fileName": {
+                      "type": "Expression",
+                      "value": "@item()"
+                    }
+                  },
+                  "referenceName": "ds_github_quality_json",
+                  "type": "DatasetReference"
+                }
+              ],
+              "outputs": [
+                {
+                  "parameters": {
+                    "directory": {
+                      "type": "Expression",
+                      "value": "@pipeline().parameters.landingDirectory"
+                    },
+                    "fileName": {
+                      "type": "Expression",
+                      "value": "@item()"
+                    },
+                    "fileSystem": {
+                      "type": "Expression",
+                      "value": "@pipeline().parameters.landingFileSystem"
+                    },
+                    "storageAccountName": {
+                      "type": "Expression",
+                      "value": "@pipeline().parameters.storageAccountName"
+                    }
+                  },
+                  "referenceName": "ds_adls_quality_json",
+                  "type": "DatasetReference"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    ],
+    "annotations": [
+      "Deterministic multi-file batch ingestion"
+    ],
+    "parameters": {
+      "landingDirectory": {
+        "type": "String",
+        "defaultValue": "volume/landing/batch-quality/836901141adce556adec1811d132127953d52c9b"
+      },
+      "landingFileSystem": {
+        "type": "String",
+        "defaultValue": "landing"
+      },
+      "sourceFiles": {
+        "type": "Array",
+        "defaultValue": [
+          "quality_observations_01.jsonl",
+          "quality_observations_02.jsonl",
+          "quality_observations_03.jsonl",
+          "quality_observations_04.jsonl",
+          "quality_observations_05.jsonl",
+          "quality_observations_06.jsonl"
+        ]
+      },
+      "storageAccountName": {
+        "type": "String"
+      }
+    },
+    "variables": {
+      "executionCommit": {
+        "type": "String",
+        "defaultValue": "836901141adce556adec1811d132127953d52c9b"
+      }
+    }
+  }
+}

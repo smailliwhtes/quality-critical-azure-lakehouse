@@ -1,0 +1,51 @@
+{
+  "name": "ds_adls_quality_json",
+  "properties": {
+    "annotations": [],
+    "linkedServiceName": {
+      "parameters": {
+        "storageAccountName": {
+          "type": "Expression",
+          "value": "@dataset().storageAccountName"
+        }
+      },
+      "referenceName": "ls_adls_managed_identity",
+      "type": "LinkedServiceReference"
+    },
+    "parameters": {
+      "directory": {
+        "type": "String"
+      },
+      "fileName": {
+        "type": "String"
+      },
+      "fileSystem": {
+        "type": "String"
+      },
+      "storageAccountName": {
+        "type": "String"
+      }
+    },
+    "schema": [],
+    "type": "Json",
+    "typeProperties": {
+      "location": {
+        "fileName": {
+          "type": "Expression",
+          "value": "@dataset().fileName"
+        },
+        "fileSystem": {
+          "type": "Expression",
+          "value": "@dataset().fileSystem"
+        },
+        "folderPath": {
+          "type": "Expression",
+          "value": "@dataset().directory"
+        },
+        "type": "AzureBlobFSLocation"
+      },
+      "encodingName": "UTF-8"
+    }
+  }
+}
+
