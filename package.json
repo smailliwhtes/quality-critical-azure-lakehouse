@@ -6,9 +6,10 @@
   "scripts": {
     "sync:content": "node scripts/sync-content.mjs",
     "build:architecture": "node scripts/build-architecture.mjs",
+    "build:evidence-visuals": "node scripts/build-evidence-visuals.mjs",
     "build:pdf": "node scripts/build-pdf.mjs",
     "build:site": "vite build",
-    "build": "npm run sync:content && npm run build:architecture && npm run build:pdf && npm run build:site",
+    "build": "npm run sync:content && npm run build:architecture && npm run build:evidence-visuals && npm run build:pdf && npm run build:site",
     "check:content": "node scripts/validate-content.mjs",
     "scan:publication": "node scripts/publication-scan.mjs",
     "check:pdf": "node scripts/validate-pdf.mjs",

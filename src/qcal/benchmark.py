@@ -7,6 +7,7 @@ import json
 import math
 import statistics
 import time
+from contextlib import suppress
 from datetime import UTC, datetime
 
 from pyspark.sql import DataFrame, SparkSession
@@ -94,30 +95,68 @@ def _nearest_rank(values: list[int], quantile: float) -> int | None:
     return ordered[index]
 
 
+def _runtime_conf_value(spark: SparkSession, key: str, default: str) -> str:
+    """Read a SQL setting through both classic Spark and Spark Connect."""
+
+    return spark.conf.get(key, default)
+
+
+def _query_plan_text(query: DataFrame) -> str:
+    """Return a physical-plan representation without requiring a JVM handle."""
+
+    try:
+        return query._jdf.queryExecution().executedPlan().toString()
+    except Exception:
+        try:
+            return query._explain_string(mode="formatted")
+        except Exception:
+            return "PLAN_NOT_EXPOSED_BY_RUNTIME"
+
+
+def _query_partition_count(query: DataFrame) -> int | None:
+    """Return output partitions when the runtime exposes the classic RDD bridge."""
+
+    try:
+        return query.rdd.getNumPartitions()
+    except Exception:
+        return None
+
+
 def _spark_stage_metrics(spark: SparkSession, job_group: str) -> dict[str, int | None]:
-    context = spark.sparkContext
-    tracker = context.statusTracker()
-    job_ids = tracker.getJobIdsForGroup(job_group)
-    stage_ids = sorted(
-        {
-            stage_id
-            for job_id in job_ids
-            for stage_id in list(tracker.getJobInfo(job_id).stageIds)
-        }
-    )
     metrics: dict[str, int | None] = {
-        "job_count": len(job_ids),
-        "stage_count": 0,
-        "task_count": 0,
-        "shuffle_read_bytes": 0,
-        "shuffle_write_bytes": 0,
-        "memory_bytes_spilled": 0,
-        "disk_bytes_spilled": 0,
+        "job_count": None,
+        "stage_count": None,
+        "task_count": None,
+        "shuffle_read_bytes": None,
+        "shuffle_write_bytes": None,
+        "memory_bytes_spilled": None,
+        "disk_bytes_spilled": None,
         "maximum_task_duration_ms": None,
         "p75_task_duration_ms": None,
     }
     task_durations: list[int] = []
     try:
+        context = spark.sparkContext
+        tracker = context.statusTracker()
+        job_ids = tracker.getJobIdsForGroup(job_group)
+        stage_ids = sorted(
+            {
+                stage_id
+                for job_id in job_ids
+                for stage_id in list(tracker.getJobInfo(job_id).stageIds)
+            }
+        )
+        metrics.update(
+            {
+                "job_count": len(job_ids),
+                "stage_count": 0,
+                "task_count": 0,
+                "shuffle_read_bytes": 0,
+                "shuffle_write_bytes": 0,
+                "memory_bytes_spilled": 0,
+                "disk_bytes_spilled": 0,
+            }
+        )
         store = context._jsc.sc().statusStore()
         empty_statuses = context._jvm.java.util.Collections.emptyList()
         empty_quantiles = context._gateway.new_array(context._jvm.double, 0)
@@ -144,14 +183,7 @@ def _spark_stage_metrics(spark: SparkSession, job_group: str) -> dict[str, int |
                 if duration is not None:
                     task_durations.append(int(duration))
     except Exception:
-        metrics.update(
-            {
-                "shuffle_read_bytes": None,
-                "shuffle_write_bytes": None,
-                "memory_bytes_spilled": None,
-                "disk_bytes_spilled": None,
-            }
-        )
+        return metrics
     metrics["maximum_task_duration_ms"] = max(task_durations) if task_durations else None
     metrics["p75_task_duration_ms"] = _nearest_rank(task_durations, 0.75)
     return metrics
@@ -161,17 +193,18 @@ def _execute_measured_query(
     spark: SparkSession, query: DataFrame, *, mode: str, iteration: int
 ) -> dict[str, object]:
     job_group = f"part4-benchmark-{mode}-{iteration}-{time.time_ns()}"
-    spark.sparkContext.setJobGroup(job_group, job_group, interruptOnCancel=True)
+    with suppress(Exception):
+        spark.sparkContext.setJobGroup(job_group, job_group, interruptOnCancel=True)
     started = time.perf_counter()
     rows = query.collect()
     wall_time = time.perf_counter() - started
-    plan = query._jdf.queryExecution().executedPlan().toString()
+    plan = _query_plan_text(query)
     stage_metrics = _spark_stage_metrics(spark, job_group)
     return {
         "mode": mode,
         "iteration": iteration,
         "wall_time_seconds": round(wall_time, 6),
-        "partition_count": query.rdd.getNumPartitions(),
+        "partition_count": _query_partition_count(query),
         "result_row_count": len(rows),
         "result_sha256": _canonical_result_hash(rows),
         "physical_plan_sha256": hashlib.sha256(plan.encode()).hexdigest(),
@@ -192,8 +225,10 @@ def run_benchmark_comparison(
 
     if iterations != 3:
         raise ValueError("benchmark contract requires exactly three executions per mode")
-    original_aqe = spark.conf.get("spark.sql.adaptive.enabled")
-    original_broadcast = spark.conf.get("spark.sql.autoBroadcastJoinThreshold")
+    original_aqe = _runtime_conf_value(spark, "spark.sql.adaptive.enabled", "true")
+    original_broadcast = _runtime_conf_value(
+        spark, "spark.sql.autoBroadcastJoinThreshold", "10485760"
+    )
     spark.conf.set("spark.sql.adaptive.enabled", "false")
     spark.conf.set("spark.sql.autoBroadcastJoinThreshold", "-1")
     fact, dimension = build_performance_fixture(

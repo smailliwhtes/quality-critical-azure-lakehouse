@@ -97,8 +97,12 @@ def test_site_and_pdf_build_contracts_are_declared() -> None:
     assert package["private"] is True
     assert package["scripts"]["build"] == (
         "npm run sync:content && npm run build:architecture "
-        "&& npm run build:pdf && npm run build:site"
+        "&& npm run build:evidence-visuals && npm run build:pdf && npm run build:site"
+    )
+    assert package["scripts"]["build:evidence-visuals"] == (
+        "node scripts/build-evidence-visuals.mjs"
     )
     assert "sourcemap" in (ROOT / "vite.config.ts").read_text(encoding="utf-8")
     assert (ROOT / "scripts/build-pdf.mjs").exists()
+    assert (ROOT / "scripts/build-evidence-visuals.mjs").exists()
     assert (ROOT / "portfolio/site/index.html").exists()
