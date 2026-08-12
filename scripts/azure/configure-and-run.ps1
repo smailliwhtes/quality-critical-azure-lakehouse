@@ -296,6 +296,17 @@ Write-PublicJson 'source-upload.json' ([ordered]@{
 })
 
 Write-Host 'Deploying and running the parameterized ADF ForEach/Copy path.'
+$adfReceiptPath = Join-Path $publicReceipts 'adf-copy-run.json'
+$adfAlreadyCompleted = $false
+if (Test-Path -LiteralPath $adfReceiptPath) {
+  $existingAdfReceipt = Get-Content -LiteralPath $adfReceiptPath -Raw | ConvertFrom-Json
+  $adfRows = ($existingAdfReceipt.copy_activities | Measure-Object rows_copied -Sum).Sum
+  $adfAlreadyCompleted = $existingAdfReceipt.status -eq 'Succeeded' -and `
+    @($existingAdfReceipt.copy_activities).Count -eq 6 -and $adfRows -eq 30000
+}
+if ($adfAlreadyCompleted) {
+  Write-Host 'Reusing the verified six-file, 30,000-row ADF receipt; no duplicate copy run submitted.'
+} else {
 $adfTemp = Join-Path $privateRoot 'adf-runtime'
 New-Item -ItemType Directory -Path $adfTemp -Force | Out-Null
 $adfAssets = @(
@@ -385,6 +396,7 @@ Write-PublicJson 'adf-copy-run.json' ([ordered]@{
   managed_identity = $true
   connection_material_included = $false
 })
+}
 
 Write-Host 'Creating Unity Catalog storage objects and governed volumes.'
 $credentialName = 'part4_access_connector'
@@ -498,8 +510,10 @@ $nodeTypes = Invoke-ExternalJson -Command $databricks -Arguments @(
   'clusters', 'list-node-types', '-o', 'json'
 ) -FailureMessage 'Databricks node-type discovery failed.'
 $availableNodeTypes = @($nodeTypes.node_types | ForEach-Object { $_.node_type_id })
-if ('Standard_DS3_v2' -notin $availableNodeTypes) {
-  throw 'The approved Standard_DS3_v2 primary job node type is not available.'
+$requestedPrimaryNodeType = 'Standard_DS3_v2'
+$primaryNodeType = 'Standard_D4ds_v6'
+if ($primaryNodeType -notin $availableNodeTypes) {
+  throw 'The quota-safe Standard_D4ds_v6 stockout fallback is not available.'
 }
 $pipelineNodeType = if ('Standard_D2ads_v6' -in $availableNodeTypes) {
   'Standard_D2ads_v6'
@@ -515,7 +529,7 @@ if (-not $pipelineNodeType) {
 $bundleVariables = @(
   "catalog=$CatalogName",
   "spark_version=$sparkVersion",
-  'node_type_id=Standard_DS3_v2',
+  "node_type_id=$primaryNodeType",
   "pipeline_node_type_id=$pipelineNodeType",
   "storage_account_name=$storageAccountName",
   "event_hubs_namespace=$eventHubsNamespace",
@@ -547,7 +561,14 @@ Write-PublicJson 'platform-configuration.json' ([ordered]@{
   workspace_mode = 'hybrid'
   runtime_key = $sparkVersion
   runtime_label = $sparkVersionLabel
-  primary_job_compute = @{ node_type = 'Standard_DS3_v2'; driver_count = 1; worker_count = 1; vcpus = 8 }
+  primary_job_compute = @{
+    requested_node_type = $requestedPrimaryNodeType
+    actual_node_type = $primaryNodeType
+    adjustment_reason = 'CLOUD_PROVIDER_RESOURCE_STOCKOUT'
+    driver_count = 1
+    worker_count = 1
+    vcpus = 8
+  }
   overlapping_pipeline_compute = @{ node_type = $pipelineNodeType; single_node = $true; vcpus = 2 }
   peak_verified_quota_plan_vcpus = 10
   unity_catalog_metastore_attached = [bool]$metastore

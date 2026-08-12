@@ -11,7 +11,7 @@ variables:
   catalog:
     default: part4_ops
   node_type_id:
-    default: Standard_DS3_v2
+    default: Standard_D4ds_v6
   pipeline_node_type_id:
     default: Standard_D2ads_v6
   spark_version:
@@ -84,7 +84,7 @@ resources:
         - job_cluster_key: part4_job_cluster
           new_cluster:
             spark_version: ${var.spark_version}
-            node_type_id: Standard_DS3_v2
+            node_type_id: ${var.node_type_id}
             num_workers: 1
             data_security_mode: USER_ISOLATION
             runtime_engine: STANDARD
@@ -220,7 +220,7 @@ resources:
         - job_cluster_key: part4_performance_cluster
           new_cluster:
             spark_version: ${var.spark_version}
-            node_type_id: Standard_DS3_v2
+            node_type_id: ${var.node_type_id}
             num_workers: 1
             data_security_mode: USER_ISOLATION
             runtime_engine: STANDARD
