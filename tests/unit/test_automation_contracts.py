@@ -92,6 +92,7 @@ def test_cloud_runner_configures_and_executes_every_required_path() -> None:
     assert "ResumeRepairId" in script
     assert "unknown-run.json" in script
     assert "public_run_id" in script
+    assert script.count('$null = & $databricks fs cp') == 2
     assert "EVENT_HUB_CONNECTION_STRING" in script
     assert "primaryConnectionString" in script
     assert "Write-Host $connection" not in script

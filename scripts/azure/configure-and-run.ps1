@@ -163,11 +163,11 @@ function Copy-GovernedReceipt(
   [string]$ExpectedRunId = ''
 ) {
   $privatePath = Join-Path $privateReceipts $PublicName
-  & $databricks fs cp "dbfs:/Volumes/$CatalogName/governance/evidence/$RelativePath" $privatePath --overwrite 2> $commandErrorPath
+  $null = & $databricks fs cp "dbfs:/Volumes/$CatalogName/governance/evidence/$RelativePath" $privatePath --overwrite 2> $commandErrorPath
   if ($LASTEXITCODE -ne 0 -and $ExpectedRunId) {
     $directory = [IO.Path]::GetDirectoryName($RelativePath).Replace('\', '/')
     $fallbackPath = "$directory/unknown-run.json"
-    & $databricks fs cp "dbfs:/Volumes/$CatalogName/governance/evidence/$fallbackPath" $privatePath --overwrite 2> $commandErrorPath
+    $null = & $databricks fs cp "dbfs:/Volumes/$CatalogName/governance/evidence/$fallbackPath" $privatePath --overwrite 2> $commandErrorPath
   }
   if ($LASTEXITCODE -ne 0) { throw "Governed receipt $RelativePath could not be collected." }
   $raw = Get-Content -LiteralPath $privatePath -Raw
