@@ -148,7 +148,8 @@ function Get-ActiveDatabricksRunId([long]$JobId) {
   $runs = @()
   if ($null -ne $activeRuns) { $runs = @($activeRuns) }
   if (@($runs).Count -gt 1) { throw 'More than one active run exists for a single-concurrency job.' }
-  return if (@($runs).Count -eq 1) { [long]@($runs)[0].run_id } else { [long]0 }
+  if (@($runs).Count -eq 1) { return [long]@($runs)[0].run_id }
+  return [long]0
 }
 
 function Copy-GovernedReceipt([string]$RelativePath, [string]$PublicName) {
