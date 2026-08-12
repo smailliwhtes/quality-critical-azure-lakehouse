@@ -513,9 +513,10 @@ $nodeTypes = Invoke-ExternalJson -Command $databricks -Arguments @(
 ) -FailureMessage 'Databricks node-type discovery failed.'
 $availableNodeTypes = @($nodeTypes.node_types | ForEach-Object { $_.node_type_id })
 $requestedPrimaryNodeType = 'Standard_DS3_v2'
-$primaryNodeType = 'Standard_D4ds_v6'
-if ($primaryNodeType -notin $availableNodeTypes) {
-  throw 'The quota-safe Standard_D4ds_v6 stockout fallback is not available.'
+$primaryNodeType = 'Standard_E4as_v4'
+$flexibleAlternateNodeType = 'Standard_E4ds_v4'
+if ($primaryNodeType -notin $availableNodeTypes -or $flexibleAlternateNodeType -notin $availableNodeTypes) {
+  throw 'The quota-safe flexible E4 node types are not available.'
 }
 $pipelineNodeType = if ('Standard_D2ads_v6' -in $availableNodeTypes) {
   'Standard_D2ads_v6'
@@ -565,8 +566,9 @@ Write-PublicJson 'platform-configuration.json' ([ordered]@{
   runtime_label = $sparkVersionLabel
   primary_job_compute = @{
     requested_node_type = $requestedPrimaryNodeType
-    actual_node_type = $primaryNodeType
-    adjustment_reason = 'CLOUD_PROVIDER_RESOURCE_STOCKOUT'
+    preferred_node_type = $primaryNodeType
+    flexible_alternate_node_types = @($flexibleAlternateNodeType)
+    adjustment_reason = 'TWO_CLOUD_PROVIDER_RESOURCE_STOCKOUTS'
     driver_count = 1
     worker_count = 1
     vcpus = 8

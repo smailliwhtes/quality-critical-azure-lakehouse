@@ -92,7 +92,10 @@ def test_bundle_defines_exact_professional_jobs_dag() -> None:
     }
     assert job["job_clusters"][0]["new_cluster"]["num_workers"] == 1
     assert job["job_clusters"][0]["new_cluster"]["node_type_id"] == "${var.node_type_id}"
-    assert bundle["variables"]["node_type_id"]["default"] == "Standard_D4ds_v6"
+    assert bundle["variables"]["node_type_id"]["default"] == "Standard_E4as_v4"
+    assert job["job_clusters"][0]["new_cluster"]["worker_node_type_flexibility"] == {
+        "alternate_node_type_ids": ["Standard_E4ds_v4"]
+    }
 
 
 def test_bundle_has_same_compute_three_by_three_performance_job() -> None:
@@ -102,7 +105,10 @@ def test_bundle_has_same_compute_three_by_three_performance_job() -> None:
     parameters = job["tasks"][0]["spark_python_task"]["parameters"]
 
     assert cluster["node_type_id"] == "${var.node_type_id}"
-    assert bundle["variables"]["node_type_id"]["default"] == "Standard_D4ds_v6"
+    assert bundle["variables"]["node_type_id"]["default"] == "Standard_E4as_v4"
+    assert cluster["driver_node_type_flexibility"] == {
+        "alternate_node_type_ids": ["Standard_E4ds_v4"]
+    }
     assert cluster["num_workers"] == 1
     assert "5000000" in parameters
     assert "3" in parameters
