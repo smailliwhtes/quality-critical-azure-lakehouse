@@ -90,12 +90,13 @@ def test_bundle_defines_exact_professional_jobs_dag() -> None:
         "silver_transform",
         "scd2_history",
     }
-    assert job["job_clusters"][0]["new_cluster"]["num_workers"] == 1
+    cluster = job["job_clusters"][0]["new_cluster"]
+    assert cluster["num_workers"] == 0
+    assert cluster["spark_conf"]["spark.databricks.cluster.profile"] == "singleNode"
+    assert cluster["custom_tags"]["ResourceClass"] == "SingleNode"
     assert job["job_clusters"][0]["new_cluster"]["node_type_id"] == "${var.node_type_id}"
     assert bundle["variables"]["node_type_id"]["default"] == "Standard_E4as_v4"
-    assert job["job_clusters"][0]["new_cluster"]["worker_node_type_flexibility"] == {
-        "alternate_node_type_ids": ["Standard_E4ds_v4"]
-    }
+    assert "worker_node_type_flexibility" not in cluster
 
 
 def test_bundle_has_same_compute_three_by_three_performance_job() -> None:
@@ -109,7 +110,10 @@ def test_bundle_has_same_compute_three_by_three_performance_job() -> None:
     assert cluster["driver_node_type_flexibility"] == {
         "alternate_node_type_ids": ["Standard_E4ds_v4"]
     }
-    assert cluster["num_workers"] == 1
+    assert cluster["num_workers"] == 0
+    assert cluster["spark_conf"]["spark.databricks.cluster.profile"] == "singleNode"
+    assert cluster["custom_tags"]["ResourceClass"] == "SingleNode"
+    assert "worker_node_type_flexibility" not in cluster
     assert "5000000" in parameters
     assert "3" in parameters
     assert (ROOT / "pipelines/jobs/performance_benchmark.py").exists()

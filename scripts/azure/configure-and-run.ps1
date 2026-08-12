@@ -568,13 +568,14 @@ Write-PublicJson 'platform-configuration.json' ([ordered]@{
     requested_node_type = $requestedPrimaryNodeType
     preferred_node_type = $primaryNodeType
     flexible_alternate_node_types = @($flexibleAlternateNodeType)
-    adjustment_reason = 'TWO_CLOUD_PROVIDER_RESOURCE_STOCKOUTS'
+    adjustment_reason = 'THREE_TWO_VM_CAPACITY_ACQUISITION_FAILURES'
+    single_node = $true
     driver_count = 1
-    worker_count = 1
-    vcpus = 8
+    worker_count = 0
+    vcpus = 4
   }
   overlapping_pipeline_compute = @{ node_type = $pipelineNodeType; single_node = $true; vcpus = 2 }
-  peak_verified_quota_plan_vcpus = 10
+  peak_verified_quota_plan_vcpus = 6
   unity_catalog_metastore_attached = [bool]$metastore
   storage_credential = 'AZURE_MANAGED_IDENTITY_ACCESS_CONNECTOR'
   secret_backend = $secretBackend
