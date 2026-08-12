@@ -116,7 +116,9 @@ function Wait-DatabricksRun([long]$RunId, [bool]$ExpectSuccess, [long]$RepairId 
       } else {
         @()
       }
-      $repairObserved = @($repairHistory | Where-Object { $_.id -eq $RepairId }).Count -eq 1
+      $repairObserved = @($repairHistory | Where-Object {
+        $_.PSObject.Properties.Name -contains 'id' -and [long]$_.id -eq $RepairId
+      }).Count -eq 1
     }
     $lifeCycle = if ($run.state.PSObject.Properties.Name -contains 'life_cycle_state') {
       [string]$run.state.life_cycle_state
