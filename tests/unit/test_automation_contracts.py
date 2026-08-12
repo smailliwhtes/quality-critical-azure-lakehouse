@@ -37,6 +37,17 @@ def test_deploy_workflow_exposes_only_approved_operations() -> None:
     assert workflow["permissions"] == {"contents": "read", "id-token": "write"}
     assert "databricks/setup-cli@v1.11.0" in str(workflow)
     assert "actions/upload-artifact@v4" in str(workflow)
+    assert "oidc-validate.ps1" in str(workflow)
+
+
+def test_oidc_validation_is_resource_group_scoped_and_exercises_data_plane() -> None:
+    script = (ROOT / "scripts/azure/oidc-validate.ps1").read_text(encoding="utf-8")
+
+    assert "az deployment group create" in script
+    assert "rg-qcal-part4-dev" in script
+    assert "az storage fs directory create" in script
+    assert "workspace_sku" in script
+    assert "subscription delete" not in script
 
 
 def test_cost_snapshot_fails_truthfully_when_cost_api_is_unavailable() -> None:
