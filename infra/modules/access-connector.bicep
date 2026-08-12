@@ -15,4 +15,3 @@ resource connector 'Microsoft.Databricks/accessConnectors@2023-05-01' = {
 output connectorId string = connector.id
 output connectorName string = connector.name
 output principalId string = connector.identity.principalId
-

@@ -177,4 +177,3 @@ resource failedAdminAlert 'Microsoft.Insights/activityLogAlerts@2020-10-01' = {
 output logAnalyticsWorkspaceId string = logs.id
 output logAnalyticsWorkspaceName string = logs.name
 output alertRuleName string = failedAdminAlert.name
-

@@ -23,4 +23,3 @@ resource githubEnvironmentFederation 'Microsoft.ManagedIdentity/userAssignedIden
 output githubIdentityClientId string = githubIdentity.properties.clientId
 output githubIdentityPrincipalId string = githubIdentity.properties.principalId
 output githubIdentityId string = githubIdentity.id
-

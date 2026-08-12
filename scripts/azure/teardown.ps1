@@ -61,4 +61,3 @@ $receipt = @{
 }
 New-Item -ItemType Directory -Path (Split-Path -Parent $receiptPath) -Force | Out-Null
 [IO.File]::WriteAllText($receiptPath, ($receipt | ConvertTo-Json -Depth 5))
-

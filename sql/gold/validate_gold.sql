@@ -29,4 +29,3 @@ SELECT site_id, product_id, reporting_date
 FROM part4_ops.gold.kpi_quality_summary
 GROUP BY site_id, product_id, reporting_date
 HAVING count(*) > 1;
-

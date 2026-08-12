@@ -17,4 +17,3 @@ resource factory 'Microsoft.DataFactory/factories@2018-06-01' = {
 output factoryId string = factory.id
 output factoryName string = factory.name
 output principalId string = factory.identity.principalId
-

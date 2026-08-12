@@ -47,4 +47,3 @@ output namespaceId string = eventHubsNamespace.id
 output namespaceName string = eventHubsNamespace.name
 output eventHubName string = eventHub.name
 output authorizationRuleName string = streamAuthorization.name
-

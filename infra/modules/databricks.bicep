@@ -29,4 +29,3 @@ output workspaceId string = workspace.id
 output workspaceName string = workspace.name
 output workspaceUrl string = workspace.properties.workspaceUrl
 output managedResourceGroupName string = managedResourceGroupName
-

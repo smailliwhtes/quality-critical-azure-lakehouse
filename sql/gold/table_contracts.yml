@@ -24,4 +24,3 @@ objects:
     grain: one site by product by reporting date
     keys: [site_id, product_id, reporting_date]
     upstream: [part4_ops.gold.fact_batch_quality, part4_ops.gold.fact_cold_chain_excursion]
-

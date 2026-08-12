@@ -55,4 +55,3 @@ def test_producer_emits_exact_bound_and_never_writes_connection_material(tmp_pat
     assert producer.closed is True
     assert "private-value" not in public_text
     assert "SharedAccessKey" not in public_text
-

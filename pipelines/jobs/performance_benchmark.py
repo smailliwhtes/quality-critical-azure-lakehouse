@@ -36,4 +36,3 @@ put_json(
     volume_path(args.catalog, "evidence", f"performance/{receipt['run_id']}.json"),
     receipt,
 )
-
