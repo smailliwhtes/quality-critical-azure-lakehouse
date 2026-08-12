@@ -35,6 +35,6 @@
     {"id": "31-log-analytics", "purpose": "Live Log Analytics discovery result for the bounded ingestion window", "source": "GENERATED_ARTIFACT", "status": "VERIFIED", "path": "evidence/public/screenshots/31-log-analytics.png"},
     {"id": "32-monitor-cost", "purpose": "Configured Azure Monitor alert plus pending-settlement cost boundary", "source": "GENERATED_ARTIFACT", "status": "DEMONSTRATED", "path": "evidence/public/screenshots/32-monitor-cost.png"},
     {"id": "33-github-actions", "purpose": "Green CI and OIDC-backed deploy and validation workflow", "source": "GENERATED_ARTIFACT", "status": "VERIFIED", "path": "evidence/public/screenshots/33-github-actions.png"},
-    {"id": "34-teardown", "purpose": "Authoritative absence readback after isolated teardown", "source": "PLATFORM", "status": "PRODUCTION_BLUEPRINT", "path": "evidence/public/screenshots/34-teardown.png"}
+    {"id": "34-teardown", "purpose": "Authoritative absence readback after isolated teardown", "source": "GENERATED_ARTIFACT", "status": "VERIFIED", "path": "evidence/public/screenshots/34-teardown.png"}
   ]
 }

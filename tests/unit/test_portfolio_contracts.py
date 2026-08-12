@@ -91,6 +91,12 @@ def test_architecture_assets_use_official_unmodified_icons() -> None:
     assert "Azure_Public_Service_Icons_V24.zip" in source["archive"]
 
 
+def test_architecture_png_build_does_not_embed_metadata() -> None:
+    builder = (ROOT / "scripts/build-architecture.mjs").read_text(encoding="utf-8")
+
+    assert ".withMetadata" not in builder
+
+
 def test_site_and_pdf_build_contracts_are_declared() -> None:
     package = json.loads((ROOT / "package.json").read_text(encoding="utf-8"))
 
@@ -111,3 +117,11 @@ def test_site_and_pdf_build_contracts_are_declared() -> None:
     assert (ROOT / "scripts/build-evidence-visuals.mjs").exists()
     assert (ROOT / "scripts/build-evidence-manifest.mjs").exists()
     assert (ROOT / "portfolio/site/index.html").exists()
+
+
+def test_pdf_builder_detects_jpeg_content_in_screenshot_files() -> None:
+    builder = (ROOT / "scripts/build-pdf.mjs").read_text(encoding="utf-8")
+
+    assert "const isJpeg" in builder
+    assert "bytes[0] === 0xff" in builder
+    assert "pdf.embedJpg(bytes)" in builder

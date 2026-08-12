@@ -145,8 +145,8 @@ const definitions = {
     receipt: "teardown.json",
     validation: "tests/unit/test_automation_contracts.py",
     runId: (receipt) => receipt?.public_run_id ?? "pending-authoritative-readback",
-    notes: "Deletion is intentionally deferred until the pre-teardown evidence release is durable.",
-    limitation: "Authoritative resource-group, Databricks-managed-resource-group, and Part 4 budget absence readback is pending.",
+    notes: "Azure confirmed both isolated resource groups and the Part 4 budget absent after 20 polls; the shared metastore and unrelated resources were preserved.",
+    limitation: "",
   },
   evidence: {
     service: "Public evidence system",

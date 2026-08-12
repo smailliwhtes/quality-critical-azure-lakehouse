@@ -34,7 +34,7 @@ Receipts are sanitized before hashing. Counts are reconciled across producer, Ev
 
 ## Current evidence boundary
 
-The manifest schema, validator, deterministic hashing, capture pipeline, sanitization policy, and 34-slot curation are `DEMONSTRATED`. Executed Azure and Databricks claims are individually `VERIFIED` only when their required bundle exists. Cost remains pending settlement; the activity-log alert is configured but not fired; the Trial workspace's unsupported ARM diagnostics category is `PRODUCTION_BLUEPRINT`; teardown remains pending until authoritative readback.
+The manifest schema, validator, deterministic hashing, capture pipeline, sanitization policy, and 34-slot curation are `DEMONSTRATED`. Executed Azure and Databricks claims are individually `VERIFIED` only when their required bundle exists. Cost remains pending settlement; the activity-log alert is configured but not fired; the Trial workspace's unsupported ARM diagnostics category is `PRODUCTION_BLUEPRINT`. Exact-scope teardown is `VERIFIED` by an Azure receipt, 20 authoritative polls, and a generated readback panel explicitly labeled as a generated artifact.
 
 ## Release rule
 

@@ -23,7 +23,6 @@ for (const icon of [...new Set(icons)]) {
 const png = await sharp(Buffer.from(svg))
   .resize({ width: 2400, withoutEnlargement: false })
   .png({ compressionLevel: 6, adaptiveFiltering: true })
-  .withMetadata({ density: 144 })
   .toBuffer();
 
 const output = resolve(architectureDir, "quality-critical-lakehouse.png");

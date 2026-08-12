@@ -63,7 +63,6 @@ $receipt = @{
   managed_resource_group_absent = $managedAbsent
   part4_budget_absent = $budgetAbsent
   resource_group_absent = $projectAbsent
-  managed_resource_group_absent = $managedAbsent
   budget_absent = $budgetAbsent
   poll_attempts = $pollAttempts
   shared_metastore_preserved = $true

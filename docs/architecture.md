@@ -29,7 +29,7 @@ The workspace ran in East US 2 on the Portal-confirmed `trial` SKU and Hybrid mo
 
 ## Current evidence boundary
 
-Provisioning, managed-identity access, ADF batch ingestion, Event Hubs streaming, Bronze/Silver/Gold processing, Lakeflow orchestration, AUTO CDC, Unity Catalog governance and lineage, controlled failure, focused repair, and performance execution are `VERIFIED`. The architecture rendering and production extensions are `DEMONSTRATED`. Databricks ARM diagnostics are `PRODUCTION_BLUEPRINT` because the live Trial workspace exposed no diagnostic category through ARM. Cost remains `PENDING BILLING SETTLEMENT`, and teardown is promoted only after authoritative absence readback.
+Provisioning, managed-identity access, ADF batch ingestion, Event Hubs streaming, Bronze/Silver/Gold processing, Lakeflow orchestration, AUTO CDC, Unity Catalog governance and lineage, controlled failure, focused repair, performance execution, and exact-scope teardown are `VERIFIED`. The architecture rendering and production extensions are `DEMONSTRATED`. Databricks ARM diagnostics are `PRODUCTION_BLUEPRINT` because the live Trial workspace exposed no diagnostic category through ARM. Cost remains `PENDING BILLING SETTLEMENT`. Azure confirmed both isolated resource groups and the Part 4 budget absent after 20 polls.
 
 ## Production blueprint extensions
 

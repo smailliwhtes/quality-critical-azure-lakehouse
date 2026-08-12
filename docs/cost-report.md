@@ -21,7 +21,7 @@ Cost data is reported only as `ACTUAL AVAILABLE COST`, `CURRENT COST SNAPSHOT`, 
 
 ## Checkpoints
 
-Snapshots are attempted before provisioning, after infrastructure deployment, after batch and streaming execution, after incident and performance work, and immediately before teardown. Each receipt records capture time, scope, available period, source, and label.
+Snapshots are attempted before provisioning, after infrastructure deployment, after batch and streaming execution, after incident and performance work, immediately before teardown, and after authoritative teardown readback. Each receipt records capture time, scope, available period, source, and label.
 
 ## Decision rule
 
@@ -29,7 +29,7 @@ At $15, the project stops exploration and retries and moves directly to evidence
 
 ## Executed checkpoints
 
-Timestamped snapshots were attempted before provisioning, after infrastructure, after ingestion, and after incident/performance execution. Azure Cost Management returned no usable amount during the bounded window, so every affected receipt records `API_UNAVAILABLE`, an amount of `null`, and `PENDING BILLING SETTLEMENT`. This is not converted to a zero-dollar claim.
+Timestamped snapshots were attempted at every planned checkpoint, including immediately before and after teardown. Azure Cost Management returned no usable amount during the bounded window, so every affected receipt records `API_UNAVAILABLE`, an amount of `null`, and `PENDING BILLING SETTLEMENT`. This is not converted to a zero-dollar claim.
 
 ## Current evidence boundary
 
@@ -37,4 +37,4 @@ The $20 budget, 50/75/100 percent actual notifications, 100 percent forecast not
 
 ## Cost result
 
-`PENDING BILLING SETTLEMENT`: the Cost Management query API did not return an amount before teardown. The portfolio publishes that limitation rather than inventing an estimate or treating missing telemetry as zero.
+`PENDING BILLING SETTLEMENT`: the Cost Management query API did not return an amount before or immediately after teardown. The portfolio publishes that limitation rather than inventing an estimate or treating missing telemetry as zero.

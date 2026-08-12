@@ -6,7 +6,7 @@ Azure Data Engineering Evidence Portfolio: Quality Critical Lakehouse
 
 ## Featured description
 
-I built and executed a reproducible Azure lakehouse spanning Bicep, ADLS Gen2, Data Factory, Event Hubs, Azure Databricks, Unity Catalog, PySpark, Delta Lake, Lakeflow, Azure Monitor, CI/CD, failure recovery, performance measurement, governance, and cost control. The case study links every major claim to implementation, validation, execution status, and sanitized evidence.
+I built and executed a reproducible Azure lakehouse spanning Bicep, ADLS Gen2, Data Factory, Event Hubs, Azure Databricks, Unity Catalog, PySpark, Delta Lake, Lakeflow, Azure Monitor, CI/CD, failure recovery, performance measurement, governance, and cost control, with authoritative teardown verification. The case study links every major claim to implementation, validation, execution status, and sanitized evidence.
 
 ## Featured link
 
@@ -22,7 +22,7 @@ The ten task Lakeflow Jobs graph completed on Azure Databricks Trial. Unity Cata
 
 I also ran a separate five million row Spark experiment three times per implementation on the same compute. The broadcast plan produced the same result hash but was 39.009 percent slower by median wall time. I published that result because honest measurement is more useful than a predetermined optimization story.
 
-Architecture, code, tests, platform captures, machine receipts, validation results, UTC timestamps, commit references, and SHA256 hashes are connected at the claim level. Cost telemetry remained pending settlement, so no zero or estimate is invented.
+Architecture, code, tests, platform captures, machine receipts, validation results, UTC timestamps, commit references, and SHA256 hashes are connected at the claim level. Cost telemetry remained pending settlement, so no zero or estimate is invented. Azure also confirmed the isolated resource groups and Part 4 budget were absent after exact scope teardown.
 
 The full case study includes a 90 second recruiter path, a technical deep dive, a searchable evidence explorer, and a 32 page document.
 

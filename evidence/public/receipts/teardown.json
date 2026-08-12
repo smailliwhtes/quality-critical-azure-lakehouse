@@ -1,0 +1,21 @@
+{
+  "budget_absent": true,
+  "managed_resource_group": "rg-qcal-part4-dbx-managed",
+  "unrelated_resources_targeted": false,
+  "resource_group_absent": true,
+  "statement": "The executed Azure environment was intentionally deprovisioned and can be reconstructed from source-controlled infrastructure.",
+  "part4_budget_absent": true,
+  "managed_resource_group_absent": true,
+  "completed_at_utc": "2026-08-12T21:43:33.6281482Z",
+  "project_resource_group": "rg-qcal-part4-dev",
+  "poll_attempts": 20,
+  "validation": "PASS",
+  "pre_teardown_resource_count": 9,
+  "shared_metastore_preserved": true,
+  "project_resource_group_absent": true,
+  "captured_at_utc": "2026-08-12T21:43:33.6281482Z",
+  "schema": "part4-teardown-receipt/v1",
+  "execution_commit": "3251bf2b9f7099f73056c7f772e8d6dc2de901e1",
+  "public_run_id": "azure-teardown-20260812T214333Z",
+  "started_at_utc": "2026-08-12T21:37:05.7225805Z"
+}

@@ -34,7 +34,7 @@ ADF used its managed identity for the six-file ADLS copy. The Access Connector b
 
 ## Current evidence boundary
 
-Identity definitions and local scanning are `DEMONSTRATED` as code. Managed-identity data access, Access Connector storage, scoped OIDC deployment, secret-value exclusion, tags/comments, and column masking are `VERIFIED`. Databricks ARM diagnostics remain `PRODUCTION_BLUEPRINT` because the Trial workspace exposed no supported category. Exact-scope resource absence is promoted only after teardown readback.
+Identity definitions and local scanning are `DEMONSTRATED` as code. Managed-identity data access, Access Connector storage, scoped OIDC deployment, secret-value exclusion, tags/comments, column masking, and exact-scope teardown are `VERIFIED`. Databricks ARM diagnostics remain `PRODUCTION_BLUEPRINT` because the Trial workspace exposed no supported category. Azure confirmed both isolated resource groups and the Part 4 budget absent; the shared metastore and unrelated resources were not targeted.
 
 ## Known limitations
 

@@ -34,10 +34,15 @@ test("evidence explorer is keyboard-operable and filters records", async ({ page
   await search.fill("SCD2");
   await expect(page.locator(".evidence-row:not([hidden])")).toHaveCount(1);
   await search.fill("");
+  const expectedBlueprints = await page.locator('.evidence-row[data-status="PRODUCTION_BLUEPRINT"]').count();
   await page.getByRole("button", { name: "Production blueprint" }).click();
   const visible = page.locator(".evidence-row:not([hidden])");
-  expect(await visible.count()).toBeGreaterThan(0);
-  await expect(visible.first().locator(".status--production-blueprint")).toBeVisible();
+  await expect(visible).toHaveCount(expectedBlueprints);
+  if (expectedBlueprints > 0) {
+    await expect(visible.first().locator(".status--production-blueprint")).toBeVisible();
+  } else {
+    await expect(page.locator(".no-results")).toBeVisible();
+  }
 });
 
 test("evidence explorer links each claim to screenshot, receipt, code, and validation", async ({ page }) => {

@@ -125,7 +125,8 @@ async function maybeEmbedScreenshot(pdf, item) {
   try {
     await access(path);
     const bytes = await readFile(path);
-    return path.toLowerCase().endsWith(".jpg") || path.toLowerCase().endsWith(".jpeg")
+    const isJpeg = bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff;
+    return isJpeg
       ? await pdf.embedJpg(bytes)
       : await pdf.embedPng(bytes);
   } catch {

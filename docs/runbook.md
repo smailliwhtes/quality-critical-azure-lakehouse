@@ -38,8 +38,8 @@ At $15, start no new compute and make no exploratory retry. At $20, immediately 
 
 ## Executed state
 
-Steps 1 through 6 completed in the bounded Trial window. The clean DAG, 20,000-message stream, Lakeflow AUTO CDC, governance controls, lineage, controlled incident, focused repair, and six-run benchmark have sanitized receipts. The benchmark's unavailable Spark Connect status-store metrics, empty in-window Log Analytics result, unfired administrative alert, and pending cost settlement remain explicit limitations.
+Steps 1 through 7 completed in the bounded Trial window. The clean DAG, 20,000-message stream, Lakeflow AUTO CDC, governance controls, lineage, controlled incident, focused repair, six-run benchmark, and exact-scope teardown have sanitized receipts. The benchmark's unavailable Spark Connect status-store metrics, empty in-window Log Analytics result, unfired administrative alert, and pending cost settlement remain explicit limitations.
 
 ## Current evidence boundary
 
-The runbook and local gates are `DEMONSTRATED`; completed cloud sections are `VERIFIED`. Step 7 remains `PRODUCTION_BLUEPRINT` until the pre-teardown release is durable and Azure confirms the isolated resource groups and Part 4 budget are absent.
+The runbook and local gates are `DEMONSTRATED`; all executed cloud sections are `VERIFIED`. The pre-teardown release passed GitHub CI before deletion. Azure then confirmed the isolated resource group, its Databricks-managed resource group, and the Part 4 budget absent after 20 authoritative polls while preserving the shared metastore and unrelated resources.
