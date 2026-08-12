@@ -16,7 +16,7 @@ resource githubEnvironmentFederation 'Microsoft.ManagedIdentity/userAssignedIden
       'api://AzureADTokenExchange'
     ]
     issuer: 'https://token.actions.githubusercontent.com'
-    subject: 'repo:smailliwhtes/quality-critical-azure-lakehouse:environment:part4-deployment'
+    subject: 'repo:smailliwhtes@114879270/quality-critical-azure-lakehouse@1332103244:environment:part4-deployment'
   }
 }
 

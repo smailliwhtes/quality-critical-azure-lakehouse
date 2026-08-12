@@ -108,10 +108,23 @@ function Wait-DatabricksRun([long]$RunId, [bool]$ExpectSuccess, [int]$RepairId =
       'jobs', 'get-run', "$RunId", '--include-history', '-o', 'json'
     ) -FailureMessage 'Databricks run status lookup failed.'
     if ($RepairId -gt 0) {
-      $repairObserved = @($run.repair_history | Where-Object { $_.id -eq $RepairId }).Count -eq 1
+      $repairHistory = if ($run.PSObject.Properties.Name -contains 'repair_history') {
+        @($run.repair_history)
+      } else {
+        @()
+      }
+      $repairObserved = @($repairHistory | Where-Object { $_.id -eq $RepairId }).Count -eq 1
     }
-    $lifeCycle = [string]$run.state.life_cycle_state
-    $result = [string]$run.state.result_state
+    $lifeCycle = if ($run.state.PSObject.Properties.Name -contains 'life_cycle_state') {
+      [string]$run.state.life_cycle_state
+    } else {
+      [string]$run.status.state
+    }
+    $result = if ($run.state.PSObject.Properties.Name -contains 'result_state') {
+      [string]$run.state.result_state
+    } else {
+      ''
+    }
     Write-Host "Databricks run $RunId state: $lifeCycle / $result"
     if ($repairObserved -and $lifeCycle -in @('TERMINATED', 'SKIPPED', 'INTERNAL_ERROR')) {
       if ($ExpectSuccess -and $result -ne 'SUCCESS') {
@@ -126,6 +139,15 @@ function Wait-DatabricksRun([long]$RunId, [bool]$ExpectSuccess, [int]$RepairId =
     Start-Sleep -Seconds 20
   }
   throw "Databricks run $RunId exceeded the two-hour execution deadline."
+}
+
+function Get-ActiveDatabricksRunId([long]$JobId) {
+  $activeRuns = Invoke-ExternalJson -Command $databricks -Arguments @(
+    'jobs', 'list-runs', '--job-id', "$JobId", '--active-only', '-o', 'json'
+  ) -FailureMessage 'Active Databricks run discovery failed.'
+  $runs = if ($null -eq $activeRuns) { @() } else { @($activeRuns) }
+  if ($runs.Count -gt 1) { throw 'More than one active run exists for a single-concurrency job.' }
+  return if ($runs.Count -eq 1) { [long]$runs[0].run_id } else { [long]0 }
 }
 
 function Copy-GovernedReceipt([string]$RelativePath, [string]$PublicName) {
@@ -587,7 +609,12 @@ function Start-LakehouseRun([string]$IncidentMode) {
 }
 
 Write-Host 'Running the clean Lakeflow baseline.'
-$cleanRunId = Start-LakehouseRun -IncidentMode 'false'
+$cleanRunId = Get-ActiveDatabricksRunId -JobId $lakehouseJobId
+if (-not $cleanRunId) {
+  $cleanRunId = Start-LakehouseRun -IncidentMode 'false'
+} else {
+  Write-Host "Reattached to active clean Databricks run $cleanRunId."
+}
 $cleanRun = Wait-DatabricksRun -RunId $cleanRunId -ExpectSuccess $true
 $cleanEvidenceTask = @($cleanRun.tasks | Where-Object { $_.task_key -eq 'evidence_receipt' })[0]
 $cleanStreamTask = @($cleanRun.tasks | Where-Object { $_.task_key -eq 'bronze_stream' })[0]
