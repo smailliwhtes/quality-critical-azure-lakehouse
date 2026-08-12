@@ -88,6 +88,8 @@ def test_cloud_runner_configures_and_executes_every_required_path() -> None:
     assert "PSObject.Properties['status']" in script
     assert ".node_info.status" not in script
     assert "ResumeCleanRunId" in script
+    assert "ResumeIncidentRunId" in script
+    assert "ResumeRepairId" in script
     assert "unknown-run.json" in script
     assert "public_run_id" in script
     assert "EVENT_HUB_CONNECTION_STRING" in script

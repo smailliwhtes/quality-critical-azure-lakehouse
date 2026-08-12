@@ -3,7 +3,9 @@ param(
   [string]$ResourceGroupName = 'rg-qcal-part4-dev',
   [string]$CatalogName = 'part4_ops',
   [string]$ExecutionCommit = '',
-  [long]$ResumeCleanRunId = 0
+  [long]$ResumeCleanRunId = 0,
+  [long]$ResumeIncidentRunId = 0,
+  [long]$ResumeRepairId = 0
 )
 
 # Auditable control path: storage-credentials create, external-locations create,
@@ -101,7 +103,7 @@ function Get-Sha256([string]$Value) {
   return [Convert]::ToHexString($hash).ToLowerInvariant()
 }
 
-function Wait-DatabricksRun([long]$RunId, [bool]$ExpectSuccess, [int]$RepairId = 0) {
+function Wait-DatabricksRun([long]$RunId, [bool]$ExpectSuccess, [long]$RepairId = 0) {
   $deadline = (Get-Date).ToUniversalTime().AddHours(2)
   $repairObserved = $RepairId -eq 0
   while ((Get-Date).ToUniversalTime() -lt $deadline) {
@@ -687,9 +689,23 @@ $null = Copy-GovernedReceipt -RelativePath "streaming/$($cleanStreamTask.run_id)
 $null = Copy-GovernedReceipt -RelativePath "governance/$($cleanGovernanceTask.run_id).json" -PublicName 'unity-catalog-governance.json' -ExpectedRunId "$($cleanGovernanceTask.run_id)"
 
 Write-Host 'Injecting the reserved hard contract failure.'
-$incidentRunId = Start-LakehouseRun -IncidentMode 'true'
-$incidentRun = Wait-DatabricksRun -RunId $incidentRunId -ExpectSuccess $false
-$qualityFailureTask = @($incidentRun.tasks | Where-Object { $_.task_key -eq 'quality_gate' })[0]
+$incidentRunId = $ResumeIncidentRunId
+if ($incidentRunId) {
+  $incidentRun = Invoke-ExternalJson -Command $databricks -Arguments @(
+    'jobs', 'get-run', "$incidentRunId", '--include-history', '-o', 'json'
+  ) -FailureMessage 'Requested controlled-incident run was unavailable.'
+  $originalAttempt = @($incidentRun.repair_history | Where-Object { $_.type -eq 'ORIGINAL' })[0]
+  if ([long]$incidentRun.job_id -ne $lakehouseJobId -or [string]$originalAttempt.state.result_state -ne 'FAILED') {
+    throw 'ResumeIncidentRunId must identify a lakehouse run with a failed original attempt.'
+  }
+  Write-Host "Reusing controlled-incident Databricks run $incidentRunId."
+} else {
+  $incidentRunId = Start-LakehouseRun -IncidentMode 'true'
+  $incidentRun = Wait-DatabricksRun -RunId $incidentRunId -ExpectSuccess $false
+}
+$qualityFailureTask = @($incidentRun.tasks | Where-Object {
+  $_.task_key -eq 'quality_gate' -and $_.attempt_number -eq 0
+})[0]
 $failureOutput = Invoke-ExternalJson -Command $databricks -Arguments @(
   'jobs', 'get-run-output', "$($qualityFailureTask.run_id)", '-o', 'json'
 ) -FailureMessage 'Controlled incident diagnostic collection failed.' -AllowFailure
@@ -711,23 +727,32 @@ Write-PublicJson 'lakeflow-controlled-incident.json' ([ordered]@{
 })
 
 Write-Host 'Repairing only the affected Bronze path and its downstream dependencies.'
-$repairRequestPath = Join-Path $privateRoot 'lakehouse-repair.json'
-[IO.File]::WriteAllText($repairRequestPath, (@{
-  run_id = $incidentRunId
-  rerun_tasks = @('bronze_batch')
-  rerun_dependent_tasks = $true
-  job_parameters = @{
-    incident_mode = 'false'
-    execution_commit = $ExecutionCommit
-  }
-} | ConvertTo-Json -Depth 10))
-$repairSubmission = Invoke-ExternalJson -Command $databricks -Arguments @(
-  'jobs', 'repair-run', '--json', "@$repairRequestPath", '--no-wait', '-o', 'json'
-) -FailureMessage 'Lakeflow repair submission failed.'
-$repairId = [int]$repairSubmission.repair_id
-Start-Sleep -Seconds 10
+$repairId = $ResumeRepairId
+if ($repairId) {
+  $repairAttempt = @($incidentRun.repair_history | Where-Object { [long]$_.id -eq $repairId })[0]
+  if (-not $repairAttempt) { throw 'ResumeRepairId was not found on the controlled-incident run.' }
+  Write-Host "Reusing Databricks repair $repairId."
+} else {
+  $repairRequestPath = Join-Path $privateRoot 'lakehouse-repair.json'
+  [IO.File]::WriteAllText($repairRequestPath, (@{
+    run_id = $incidentRunId
+    rerun_tasks = @('bronze_batch')
+    rerun_dependent_tasks = $true
+    job_parameters = @{
+      incident_mode = 'false'
+      execution_commit = $ExecutionCommit
+    }
+  } | ConvertTo-Json -Depth 10))
+  $repairSubmission = Invoke-ExternalJson -Command $databricks -Arguments @(
+    'jobs', 'repair-run', '--json', "@$repairRequestPath", '--no-wait', '-o', 'json'
+  ) -FailureMessage 'Lakeflow repair submission failed.'
+  $repairId = [long]$repairSubmission.repair_id
+  Start-Sleep -Seconds 10
+}
 $repairedRun = Wait-DatabricksRun -RunId $incidentRunId -ExpectSuccess $true -RepairId $repairId
-$repairEvidenceTask = @($repairedRun.tasks | Where-Object { $_.task_key -eq 'evidence_receipt' })[0]
+$repairEvidenceTask = @($repairedRun.tasks | Where-Object {
+  $_.task_key -eq 'evidence_receipt' -and $_.state.result_state -eq 'SUCCESS'
+} | Sort-Object attempt_number -Descending)[0]
 $repairReceipt = Copy-GovernedReceipt -RelativePath "jobs/$($repairEvidenceTask.run_id).json" -PublicName 'lakeflow-repaired-run.json' -ExpectedRunId "$($repairEvidenceTask.run_id)"
 
 $cleanComparable = [ordered]@{
