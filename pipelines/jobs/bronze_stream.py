@@ -21,7 +21,7 @@ connection_string = dbutils.secrets.get(
     scope=args.secret_scope, key="eventhubs-connection-string"
 )
 jaas = (
-    'org.apache.kafka.common.security.plain.PlainLoginModule required '
+    'kafkashaded.org.apache.kafka.common.security.plain.PlainLoginModule required '
     f'username="$ConnectionString" password="{connection_string}";'
 )
 raw = (

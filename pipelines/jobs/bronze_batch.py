@@ -28,17 +28,20 @@ landing = volume_path(
 )
 source = volume_path(args.catalog, "source")
 
-quality = spark.read.schema(QUALITY_SOURCE_SCHEMA).json(landing)
+quality = spark.read.schema(QUALITY_SOURCE_SCHEMA).json(landing).select(
+    "*", F.col("_metadata.file_path").alias("source_file")
+)
 if args.incident_mode == "true":
-    failure = spark.read.schema(QUALITY_SOURCE_SCHEMA).json(
-        f"{source}/hard_failure/reserved_schema_failure.jsonl"
+    failure = (
+        spark.read.schema(QUALITY_SOURCE_SCHEMA)
+        .json(f"{source}/hard_failure/reserved_schema_failure.jsonl")
+        .select("*", F.col("_metadata.file_path").alias("source_file"))
     )
     quality = quality.unionByName(failure, allowMissingColumns=True)
 
 quality_columns = sorted(QUALITY_SOURCE_SCHEMA.fieldNames())
 quality_bronze = (
-    quality.withColumn("source_file", F.input_file_name())
-    .withColumn("ingest_timestamp_utc", F.to_timestamp(F.lit(ingest_timestamp)))
+    quality.withColumn("ingest_timestamp_utc", F.to_timestamp(F.lit(ingest_timestamp)))
     .withColumn("event_timestamp_utc", F.col("event_timestamp"))
     .withColumn("pipeline_run_id", F.lit(run_id))
     .withColumn(

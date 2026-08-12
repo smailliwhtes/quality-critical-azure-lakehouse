@@ -167,6 +167,15 @@ def test_preflight_validates_preprovisioned_unity_catalog_without_recreating_it(
     assert "missing required schemas" in preflight
 
 
+def test_bronze_entrypoints_use_runtime_compatible_unity_catalog_and_kafka_apis() -> None:
+    batch = (ROOT / "pipelines/jobs/bronze_batch.py").read_text(encoding="utf-8")
+    stream = (ROOT / "pipelines/jobs/bronze_stream.py").read_text(encoding="utf-8")
+
+    assert "input_file_name" not in batch
+    assert '_metadata.file_path' in batch
+    assert "kafkashaded.org.apache.kafka.common.security.plain.PlainLoginModule" in stream
+
+
 def test_each_gold_object_has_grain_and_validation_sql() -> None:
     contract = (ROOT / "sql/gold/table_contracts.yml").read_text(encoding="utf-8")
     validation = (ROOT / "sql/gold/validate_gold.sql").read_text(encoding="utf-8")
