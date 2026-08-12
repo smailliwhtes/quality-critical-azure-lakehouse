@@ -11,8 +11,7 @@
     },
     "type": "AzureBlobFS",
     "typeProperties": {
-      "accountUrl": "@{concat('https://', linkedService().storageAccountName, '.dfs.core.windows.net')}",
-      "authentication": "ManagedIdentity"
+      "url": "@{concat('https://', linkedService().storageAccountName, '.dfs.core.windows.net')}"
     }
   }
 }
