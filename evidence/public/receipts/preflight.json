@@ -1,0 +1,62 @@
+{
+  "authentication": {
+    "azure_cli_ready": true,
+    "configured_git_identity_present": true,
+    "github_cli_ready": true,
+    "long_lived_cloud_secret_required": false
+  },
+  "captured_at_utc": "2026-08-12T14:08:21.803948Z",
+  "cost_policy_usd": {
+    "retry_stop": 15,
+    "target": 10,
+    "teardown": 20
+  },
+  "project": "quality-critical-azure-lakehouse",
+  "region": "eastus2",
+  "sanitization": {
+    "email_included": false,
+    "subscription_id_included": false,
+    "tenant_id_included": false,
+    "token_or_secret_included": false
+  },
+  "schema": "part4-preflight-receipt/v1",
+  "tools": {
+    "azure_cli": {
+      "available": true,
+      "version": "azure-cli                         2.87.0 *"
+    },
+    "bicep": {
+      "available": true,
+      "version": "Bicep CLI version 0.45.15 (6a4a640fd8)"
+    },
+    "databricks_cli": {
+      "available": true,
+      "version": "Databricks CLI v1.11.0"
+    },
+    "git": {
+      "available": true,
+      "version": "git version 2.52.0.windows.1"
+    },
+    "github_cli": {
+      "available": true,
+      "version": "gh version 2.96.0 (2026-07-02)"
+    },
+    "java": {
+      "available": true,
+      "version": "openjdk version \"17.0.20\" 2026-07-21 LTS"
+    },
+    "node": {
+      "available": true,
+      "version": "v24.16.0"
+    },
+    "npm": {
+      "available": true,
+      "version": "11.13.0"
+    },
+    "python": {
+      "available": true,
+      "version": "Python 3.12.13"
+    }
+  },
+  "trial_policy": "TRIAL_ONLY_NO_PAID_FALLBACK"
+}

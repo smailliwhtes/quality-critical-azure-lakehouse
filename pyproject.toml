@@ -1,0 +1,45 @@
+[build-system]
+requires = ["hatchling>=1.27,<2"]
+build-backend = "hatchling.build"
+
+[project]
+name = "quality-critical-azure-lakehouse"
+version = "0.1.0"
+description = "Evidence-driven Azure lakehouse portfolio for quality-critical batch and telemetry data."
+requires-python = ">=3.12,<3.13"
+dependencies = [
+  "azure-eventhub>=5.15,<6",
+  "jsonschema>=4.25,<5",
+  "pyspark==4.0.4",
+  "pyyaml>=6.0,<7",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=9.0,<10",
+  "pytest-cov>=7.0,<8",
+  "ruff>=0.14,<0.15",
+]
+
+[project.scripts]
+qcal = "qcal.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/qcal"]
+
+[tool.pytest.ini_options]
+addopts = "-ra --strict-markers"
+testpaths = ["tests"]
+pythonpath = ["src"]
+markers = [
+  "integration: local Spark integration tests",
+  "azure: tests requiring explicitly authorized live Azure resources",
+  "benchmark: controlled performance comparison",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "RUF"]

@@ -1,0 +1,58 @@
+{
+  "config": {
+    "batch_count": 600,
+    "event_hubs_count": 20000,
+    "product_count": 20,
+    "quality_file_count": 6,
+    "quality_observation_count": 30000,
+    "seed": 20260812,
+    "sensor_count": 24,
+    "site_count": 12,
+    "telemetry_count": 50000
+  },
+  "dataset_sha256": "44a96de7d6a91952838f807fab0acc6c31e28b4803b1f2335d761b0136e444a0",
+  "files": {
+    "batch/batch_master.jsonl": "06e1b27cbf31ce17231354bb74a53a9ca74711a8181961301295c245b4f3935e",
+    "cdc/batch_change_events.jsonl": "e4f67b8e27809dcf3196f7ea694a13f277cc907a4bf256b94b37856843f6c927",
+    "event_hubs/sensor_messages.jsonl": "51908735622a658e7b1d0b61949a29ee34c4f2df06f3d166c69c614866df227d",
+    "hard_failure/reserved_schema_failure.jsonl": "04f8afd585da0c78eea930b6a86d13f56d37da036c4eb5715350daf1e0cdbed9",
+    "quality/quality_observations_01.jsonl": "c9de2948d08fac4e8403d681af0a948d75344d0fa7c46451a97c5cf642f42fff",
+    "quality/quality_observations_02.jsonl": "2ca13afbf5f7bf388905b35976c9e37c2af72e811e2557b273fb5faf99c9deac",
+    "quality/quality_observations_03.jsonl": "56f5a093980b0908f1149db3d87481f778db4a9e1fcffc1e1bc830cd14d59cb0",
+    "quality/quality_observations_04.jsonl": "703721340656fbb2615461228ca3d52f15a31d63132c29b4ed9a7eff702c064a",
+    "quality/quality_observations_05.jsonl": "3475479d8da2cc7fd015d11cd39434962ea26be2cb20f1707a744e1d031bc693",
+    "quality/quality_observations_06.jsonl": "0270a373bdf32c59ad5842f6971124fc7a296a4879310814b37d4029e6226d77",
+    "reference/products.jsonl": "b5f0bf2a7c6166501ad853b454aa23f97a307d780434f896493ba7beb16080cf",
+    "reference/sensors.jsonl": "140e20fdf042c7e5d0ec8555ae9c75c6fd2b40a6be2665e4bff8363af391dac2",
+    "reference/sites.jsonl": "281f1f58b9765e2e9a0a8590f195cb1a5e336296940c18b7139d77e49dfb1e40",
+    "telemetry/sensor_telemetry.jsonl": "2435a0da9c5b8e4e9cd3b5e0ae07034b0f2cf17e2280ff3872a11afa9ad8198c"
+  },
+  "generated_at_utc": "2026-08-12T00:00:00Z",
+  "intentional_defects": {
+    "duplicate_business_record": 1,
+    "duplicate_event_id": 1,
+    "impossible_temperature": 2,
+    "inconsistent_unit": 2,
+    "malformed_timestamp": 2,
+    "missing_batch_id": 1,
+    "null_business_key": 1,
+    "out_of_order_cdc": 1,
+    "reserved_hard_failure": 1,
+    "schema_evolution_field": 1,
+    "unknown_foreign_key": 1,
+    "unknown_site_id": 1
+  },
+  "row_counts": {
+    "batches": 600,
+    "cdc_changes": 48,
+    "event_hubs_messages": 20000,
+    "products": 20,
+    "quality_observations": 30000,
+    "reserved_hard_failures": 1,
+    "sensors": 24,
+    "sites": 12,
+    "telemetry": 50000
+  },
+  "schema": "part4-synthetic-dataset/v1",
+  "seed": 20260812
+}

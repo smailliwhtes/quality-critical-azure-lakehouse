@@ -1,0 +1,27 @@
+{
+  "schema": "part4-evidence-manifest/v1",
+  "status_vocabulary": [
+    "VERIFIED",
+    "DEMONSTRATED",
+    "PRODUCTION_BLUEPRINT"
+  ],
+  "artifacts": [
+    {
+      "artifact_id": "architecture-governed-lakehouse",
+      "claim": "The bounded design connects ADF batch ingestion, Event Hubs streaming, ADLS Gen2, Azure Databricks, Unity Catalog, Lakeflow orchestration, monitoring, and evidence publication.",
+      "status": "PRODUCTION_BLUEPRINT",
+      "service": "Azure architecture",
+      "captured_at_utc": "2026-08-12T00:00:00Z",
+      "screenshot": "evidence/public/screenshots/01-architecture.png",
+      "receipt": "evidence/public/receipts/preflight.json",
+      "code_path": "infra/main.bicep",
+      "validation": "tests/unit/test_evidence_manifest.py",
+      "run_id": "local-preflight",
+      "commit_sha": "PENDING",
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "notes": "The implementation contract is present before any cloud execution.",
+      "limitation": "Cloud execution and platform evidence are pending the Trial-gated deployment window."
+    }
+  ]
+}
+

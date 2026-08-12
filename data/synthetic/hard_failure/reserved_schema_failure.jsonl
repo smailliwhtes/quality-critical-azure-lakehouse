@@ -1,0 +1,1 @@
+{"batch_id":"BATCH-00001","event_timestamp":"2026-08-18T14:40:00Z","observation_id":"HARD-FAIL-0001","result_value":{"unexpected":"object_instead_of_number"},"schema_version":"99.0-reserved-failure"}
