@@ -2,7 +2,6 @@ param logAnalyticsName string
 param location string
 param tags object
 param dataFactoryName string
-param databricksWorkspaceName string
 param eventHubsNamespaceName string
 param keyVaultName string
 param storageAccountName string
@@ -29,10 +28,6 @@ resource logs 'Microsoft.OperationalInsights/workspaces@2023-09-01' = {
 
 resource factory 'Microsoft.DataFactory/factories@2018-06-01' existing = {
   name: dataFactoryName
-}
-
-resource workspace 'Microsoft.Databricks/workspaces@2024-05-01' existing = {
-  name: databricksWorkspaceName
 }
 
 resource eventHubs 'Microsoft.EventHub/namespaces@2024-01-01' existing = {
@@ -62,21 +57,6 @@ resource factoryDiagnostics 'Microsoft.Insights/diagnosticSettings@2021-05-01-pr
     metrics: [
       {
         category: 'AllMetrics'
-        enabled: true
-      }
-    ]
-  }
-}
-
-resource workspaceDiagnostics 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
-  name: 'send-to-part4-logs'
-  scope: workspace
-  properties: {
-    logAnalyticsDestinationType: 'Dedicated'
-    workspaceId: logs.id
-    logs: [
-      {
-        categoryGroup: 'allLogs'
         enabled: true
       }
     ]

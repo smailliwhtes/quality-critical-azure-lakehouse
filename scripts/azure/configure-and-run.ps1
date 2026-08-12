@@ -514,6 +514,8 @@ Write-PublicJson 'platform-configuration.json' ([ordered]@{
   unity_catalog_metastore_attached = [bool]$metastore
   storage_credential = 'AZURE_MANAGED_IDENTITY_ACCESS_CONNECTOR'
   secret_backend = $secretBackend
+  databricks_arm_diagnostics = 'PRODUCTION_BLUEPRINT_PLATFORM_UNSUPPORTED'
+  databricks_arm_diagnostics_limitation = 'The live Trial workspace exposed no diagnostic log or metric categories through ARM.'
   long_lived_token_created = $false
   current_user_recorded_publicly = $false
   execution_commit = $ExecutionCommit

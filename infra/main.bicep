@@ -142,7 +142,6 @@ module monitoring './modules/monitoring.bicep' = {
   scope: projectResourceGroup
   params: {
     dataFactoryName: dataFactory.outputs.factoryName
-    databricksWorkspaceName: databricks.outputs.workspaceName
     eventHubsNamespaceName: eventHubs.outputs.namespaceName
     keyVaultName: keyVault.outputs.vaultName
     location: location
