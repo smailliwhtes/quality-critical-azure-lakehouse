@@ -32,8 +32,8 @@ The pipeline definition includes warning metrics through `expect`, removal behav
 
 ## Validation
 
-Local tests cover routing, types, keys, duplicate prevention, temporal invariants, Gold formulas, and rerun idempotency. Live validation will reconcile expected, accepted, rejected, and recovered counts with the Lakeflow event log.
+Local tests cover routing, types, keys, duplicate prevention, temporal invariants, Gold formulas, and rerun idempotency. The live clean run reconciled 30,000 quality rows into 29,994 accepted and 6 quarantined rows. It reconciled 20,000 streamed telemetry rows into 2,856 accepted and 17,144 quarantined rows. The reserved incident then failed the real `reserved_schema_contract` expectation before focused repair restored the clean content hashes.
 
 ## Current evidence boundary
 
-Rule logic, deterministic defect counts, local Spark routing, and the Lakeflow expectation definitions are `DEMONSTRATED`. Actual expectation metrics and the real failed Trial update remain `PRODUCTION_BLUEPRINT` until captured from the platform.
+Rule logic, deterministic defect counts, and local Spark routing are `DEMONSTRATED`. Lakeflow expectation counts, quarantine outputs, the reserved hard failure, failure diagnostic, repair, and idempotent recovery are `VERIFIED` with platform captures and receipts.

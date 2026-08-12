@@ -1,0 +1,47 @@
+{
+  "captured_at_utc": "2026-08-12T19:38:15.400895Z",
+  "checkpoint": "governed-volume/structured-streaming/bronze-telemetry",
+  "progress": {
+    "batchDuration": 1554,
+    "batchId": 5,
+    "durationMs": {
+      "latestOffset": 1535,
+      "triggerExecution": 1551
+    },
+    "eventTime": {},
+    "id": "<redacted-guid>",
+    "inputRowsPerSecond": null,
+    "name": null,
+    "numInputRows": null,
+    "observedMetrics": {},
+    "processedRowsPerSecond": null,
+    "runId": "<redacted-guid>",
+    "sink": {
+      "description": "DeltaSink[abfss://<redacted-email>/catalog/__unitystorage/catalogs/<redacted-guid>/tables/<redacted-guid>]",
+      "metrics": {},
+      "numOutputRows": -1
+    },
+    "sources": [
+      {
+        "description": "KafkaV2[Subscribe[quality-telemetry]]",
+        "endOffset": "{\"quality-telemetry\":{\"0\":10198,\"1\":9802}}",
+        "inputRowsPerSecond": 0.0,
+        "latestOffset": "{\"quality-telemetry\":{\"0\":10198,\"1\":9802}}",
+        "metrics": {
+          "avgOffsetsBehindLatest": "0.0",
+          "maxOffsetsBehindLatest": "0",
+          "minOffsetsBehindLatest": "0"
+        },
+        "numInputRows": 0,
+        "processedRowsPerSecond": 0.0,
+        "startOffset": "{\"quality-telemetry\":{\"0\":10198,\"1\":9802}}"
+      }
+    ],
+    "stateOperators": [],
+    "timestamp": "2026-08-12T19:38:13.622Z"
+  },
+  "run_id": "dbx-6fd3c40ea62c",
+  "schema": "part4-stream-progress/v1",
+  "public_run_id": "dbx-6fd3c40ea62c",
+  "source_run_id_sanitized": true
+}

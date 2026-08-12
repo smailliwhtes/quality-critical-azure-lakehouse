@@ -1,0 +1,14 @@
+{
+  "schema": "part4-controlled-incident-receipt/v1",
+  "captured_at_utc": "2026-08-12T21:00:08.9731153Z",
+  "public_run_id": "dbx-70b4590ad5b4",
+  "job_result": "FAILED",
+  "failed_task": "quality_gate",
+  "hard_contract": "reserved_schema_contract",
+  "incident_input": "reserved_schema_failure.jsonl",
+  "diagnostic": "Please refer to the logs for this pipeline in the pipelines page.",
+  "diagnostic_summary": "Flow part4_ops.silver.quality_observed violated expectation reserved_schema_contract on observation HARD-FAIL-0001 with schema_version 99.0-reserved-failure.",
+  "diagnostic_summary_source": "SANITIZED_PLATFORM_PIPELINE_ISSUE",
+  "execution_commit": "0a689155ad6dd97c5e6b9718c00b44245a7d8e46",
+  "fabricated": false
+}

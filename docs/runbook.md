@@ -36,6 +36,10 @@ Save final inventory, delete only `rg-qcal-part4-dev`, its Databricks-managed re
 
 At $15, start no new compute and make no exploratory retry. At $20, immediately invoke teardown. If Trial is unavailable, do not select paid Premium. A blocked capability remains `PRODUCTION_BLUEPRINT` with its limitation recorded.
 
+## Executed state
+
+Steps 1 through 6 completed in the bounded Trial window. The clean DAG, 20,000-message stream, Lakeflow AUTO CDC, governance controls, lineage, controlled incident, focused repair, and six-run benchmark have sanitized receipts. The benchmark's unavailable Spark Connect status-store metrics, empty in-window Log Analytics result, unfired administrative alert, and pending cost settlement remain explicit limitations.
+
 ## Current evidence boundary
 
-The commands, gates, exact target names, and local preflight are `DEMONSTRATED`. The cloud execution sections remain `PRODUCTION_BLUEPRINT` until their sanitized receipts are collected.
+The runbook and local gates are `DEMONSTRATED`; completed cloud sections are `VERIFIED`. Step 7 remains `PRODUCTION_BLUEPRINT` until the pre-teardown release is durable and Azure confirms the isolated resource groups and Part 4 budget are absent.

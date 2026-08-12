@@ -27,6 +27,12 @@ def test_teardown_script_is_exact_scoped_and_polls_authoritative_absence() -> No
     assert "while" in script
     assert "Get-Az" not in script
     assert "*part4*" not in script
+    assert "poll_attempts" in script
+    assert "resource_group_absent" in script
+    assert "managed_resource_group_absent" in script
+    assert "budget_absent" in script
+    assert "shared_metastore_preserved" in script
+    assert "unrelated_resources_targeted" in script
 
 
 def test_deploy_workflow_exposes_only_approved_operations() -> None:

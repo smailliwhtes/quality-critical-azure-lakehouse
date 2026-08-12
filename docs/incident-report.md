@@ -6,11 +6,11 @@ The controlled incident introduces exactly one reserved source record whose `sch
 
 ## Clean baseline
 
-Before injection, the full DAG must complete and the validation task must record expected row counts, zero duplicate business keys, key aggregates, one-current-version SCD2 behavior, and deterministic content hashes.
+The ten-task clean DAG completed successfully. Its receipt recorded all Bronze, Silver, SCD2, and Gold row counts; zero duplicate fact/KPI business keys; zero one-current-version violations; key aggregates; and six deterministic table content hashes.
 
-## Expected symptom
+## Observed symptom
 
-The quality-gate update fails while previously successful landing and Bronze work remains identifiable. The platform diagnostic should name the violated hard schema contract and the affected component. No presentation artifact is accepted as a substitute for that diagnostic.
+The original incident attempt failed at `quality_gate`. Lakeflow identified `reserved_schema_contract`, the `part4_ops.silver.quality_observed` flow, and observation `HARD-FAIL-0001`. The real platform diagnostic is preserved in the public sanitized capture; presentation code did not simulate the failure.
 
 ## Root cause
 
@@ -18,11 +18,11 @@ The reserved input intentionally carries a schema version outside the accepted c
 
 ## Corrective action
 
-Remove or correct only the reserved incident input. Use Lakeflow repair to rerun the failed path without repeating successful upstream tasks when the Trial runtime exposes repair. If repair is unavailable, record that exact limitation and use the narrowest reproducible rerun.
+The reserved incident file was removed from the active input and Lakeflow repair was invoked on the same job run. `bronze_batch` and its dependent quality, Silver/SCD2, Gold, validation, and receipt tasks ran a second attempt. Successful preflight, landing verification, and streaming Bronze work remained one-attempt tasks.
 
 ## Recovery validation
 
-Recovery passes only if expected and recovered row counts match, duplicate business keys equal zero, clean and recovered aggregates match, and deterministic content hashes reconcile. These checks prevent a visually green rerun from masking double processing.
+Recovery passed: expected and recovered row counts matched, duplicate business keys remained zero, the SCD2 current-version violation count remained zero, aggregates matched, and the clean and recovered canonical SHA-256 values were identical. This prevents a visually green repair from masking double processing.
 
 ## Evidence package
 
@@ -30,8 +30,8 @@ The final record pairs failed and repaired task captures with run receipts, UTC 
 
 ## Current evidence boundary
 
-The reserved failure fixture, fail-on-violation code, baseline validation design, repair automation path, and idempotency tests are `DEMONSTRATED`. The failed and repaired platform runs remain `PRODUCTION_BLUEPRINT` until executed in the Trial workspace.
+The deterministic incident fixture and local tests are `DEMONSTRATED`. The failed Lakeflow task, platform diagnostic, focused repair, attempt-count boundary, recovered row counts, duplicate checks, aggregate comparison, and clean-versus-recovered content hash are `VERIFIED`.
 
 ## Status
 
-No failure, diagnostic, repair ID, or recovery metric is prefilled. The report is intentionally incomplete rather than fabricated before execution.
+`VERIFIED`: the controlled failure and its recovery executed in the Trial workspace. Public run and receipt identifiers are sanitized; raw captures remain outside Git.

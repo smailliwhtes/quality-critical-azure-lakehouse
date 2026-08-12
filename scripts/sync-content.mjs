@@ -4,6 +4,10 @@ import { resolve } from "node:path";
 const root = resolve(import.meta.dirname, "..");
 const content = JSON.parse(await readFile(resolve(root, "portfolio/content/project.json"), "utf8"));
 const { project, capabilities, data_profile: dataProfile, gold_objects: goldObjects, boundaries } = content;
+const teardownVerified = content.engineering_journey.find((item) => item.id === "teardown")?.status === "VERIFIED";
+const teardownBoundary = teardownVerified
+  ? "Exact-scope teardown is `VERIFIED`: Azure authoritatively read back the isolated resource group, its Databricks-managed resource group, and the Part 4 budget as absent."
+  : "Exact-scope teardown remains `PRODUCTION_BLUEPRINT` until Azure authoritatively reads back the isolated resource group, its Databricks-managed resource group, and the Part 4 budget as absent.";
 
 const capabilityLine = capabilities.map((item) => `\`${item}\``).join(" · ");
 const profileRows = dataProfile.map((item) => `| ${item.label} | ${item.value} |`).join("\n");
@@ -111,7 +115,7 @@ Live deployment intentionally fails closed unless \`PART4_BUDGET_USD\` is numeri
 
 ## Current evidence boundary
 
-Local implementation and deterministic tests are represented as \`DEMONSTRATED\`. Azure workload, lineage, incident, monitoring, cost, CI deployment, and teardown claims remain \`PRODUCTION_BLUEPRINT\` until their real sanitized artifacts are present. No resource screenshot is treated as proof of workload execution.
+Azure provisioning, scoped identity, ADF batch ingestion, Event Hubs streaming, Lakeflow orchestration and expectations, AUTO CDC, Unity Catalog governance and lineage, failure and focused repair, idempotent recovery, the six-run performance experiment, monitoring configuration, and OIDC-backed deployment validation are \`VERIFIED\` with sanitized artifacts. Cost remains \`PENDING BILLING SETTLEMENT\`; the administrative alert was enabled but did not fire; the Trial workspace exposed no Databricks ARM diagnostic category. ${teardownBoundary} No resource screenshot is treated as proof of workload execution.
 
 The source planning document is private and is not included in this repository or its public metadata.
 `;
@@ -120,11 +124,11 @@ const linkedIn = `# LinkedIn Featured content
 
 ## Featured title
 
-Azure Data Engineering Evidence Portfolio: Quality-Critical Lakehouse
+Azure Data Engineering Evidence Portfolio: Quality Critical Lakehouse
 
 ## Featured description
 
-I built a reproducible Azure lakehouse implementation spanning Bicep, ADLS Gen2, Data Factory, Event Hubs, Azure Databricks, Unity Catalog, PySpark, Delta Lake, Lakeflow, Azure Monitor, CI/CD, failure recovery, Spark performance measurement, governance, cost control, and verified teardown. The case study links every major claim to its implementation, validation, execution status, and sanitized evidence.
+I built and executed a reproducible Azure lakehouse spanning Bicep, ADLS Gen2, Data Factory, Event Hubs, Azure Databricks, Unity Catalog, PySpark, Delta Lake, Lakeflow, Azure Monitor, CI/CD, failure recovery, performance measurement, governance, and cost control${teardownVerified ? ", with authoritative teardown verification" : ""}. The case study links every major claim to implementation, validation, execution status, and sanitized evidence.
 
 ## Featured link
 
@@ -132,15 +136,17 @@ ${project.site}
 
 ## Post draft
 
-I built Part 4 of my Azure Data Engineering portfolio around a question that matters in any quality-critical operation: can a published KPI be traced all the way back to the batch record or sensor event that created it?
+I built Part 4 of my Azure Data Engineering portfolio around a question that matters in any quality critical operation: can a published KPI be traced all the way back to the batch record or sensor event that created it?
 
-The project combines scheduled batch ingestion through Azure Data Factory with bounded streaming telemetry through Event Hubs. PySpark and Delta Lake carry both paths through Bronze provenance, Silver validation and quarantine, CDC and SCD Type 2 history, and six documented Gold data products.
+Azure Data Factory copied six commit pinned files and reconciled 30,000 batch quality rows. Event Hubs carried exactly 20,000 deterministic telemetry messages into checkpointed Structured Streaming. PySpark and Delta Lake then moved both paths through Bronze provenance, Silver validation and quarantine, Lakeflow AUTO CDC for SCD Type 2 history, and six documented Gold data products.
 
-The strongest part is the evidence model. Architecture, code, tests, platform receipts, validation results, timestamps, commit references, and SHA-256 hashes are connected at the claim level. A resource existing is not treated as proof that a workload ran.
+The ten task Lakeflow Jobs graph completed on Azure Databricks Trial. Unity Catalog recorded table and column lineage, applied managed storage and scoped grants, and demonstrated column masking. I then injected a reserved quality failure, captured the real failed task and diagnostic, repaired only the affected path, and proved the recovered content matched the clean baseline.
 
-I also designed the operational story into the build: a controlled quality failure, focused Lakeflow repair, idempotency checks, a three by three Spark benchmark, monitoring, explicit cost gates, and authoritative teardown verification.
+I also ran a separate five million row Spark experiment three times per implementation on the same compute. The broadcast plan produced the same result hash but was 39.009 percent slower by median wall time. I published that result because honest measurement is more useful than a predetermined optimization story.
 
-The full case study includes a 90-second recruiter path, a technical deep dive, a searchable evidence explorer, and a 32-page document.
+Architecture, code, tests, platform captures, machine receipts, validation results, UTC timestamps, commit references, and SHA256 hashes are connected at the claim level. Cost telemetry remained pending settlement, so no zero or estimate is invented.${teardownVerified ? " Azure also confirmed the isolated resource groups and Part 4 budget were absent after exact scope teardown." : ""}
+
+The full case study includes a 90 second recruiter path, a technical deep dive, a searchable evidence explorer, and a 32 page document.
 
 Portfolio: ${project.site}
 
@@ -150,7 +156,7 @@ Repository: ${project.repository}
 
 ## Publication boundary
 
-This file is a draft only. It is not uploaded or posted by project automation. Before publication, update any statement whose evidence status changed and verify that every cloud-execution claim is marked consistently with the public evidence manifest.
+This file is a draft only. It is not uploaded or posted by project automation. Before publication, update any statement whose evidence status changed and verify that every cloud execution claim is marked consistently with the public evidence manifest.
 `;
 
 await mkdir(resolve(root, "portfolio/linkedin"), { recursive: true });

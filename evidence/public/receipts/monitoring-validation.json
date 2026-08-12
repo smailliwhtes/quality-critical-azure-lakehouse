@@ -1,0 +1,14 @@
+{
+  "schema": "part4-monitoring-validation/v1",
+  "captured_at_utc": "2026-08-12T21:25:52.1714090Z",
+  "diagnostics_configured_before_workloads": true,
+  "discovered_tables": [],
+  "query_attempts": 2,
+  "final_query_result": "NO_RECORDS_VISIBLE",
+  "alert_rule_enabled": true,
+  "alert_fired": false,
+  "alert_status": "DEMONSTRATED",
+  "limitation": "The controlled data-plane quality failure did not trigger the administrative control-plane alert.",
+  "execution_commit": "0a689155ad6dd97c5e6b9718c00b44245a7d8e46",
+  "identifiers_included": false
+}

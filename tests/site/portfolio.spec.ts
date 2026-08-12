@@ -20,6 +20,7 @@ for (const viewport of viewports) {
 
     await expect(page.getByRole("heading", { name: "Quality-Critical Azure Lakehouse", exact: true })).toBeVisible();
     await expect(page.locator(".hero-card")).toHaveCount(6);
+    await expect(page.locator(".hero-card__visual img")).toHaveCount(6);
     await expect(page.locator(".journey-card")).toHaveCount(19);
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
     expect(overflow).toBeLessThanOrEqual(1);
@@ -37,6 +38,15 @@ test("evidence explorer is keyboard-operable and filters records", async ({ page
   const visible = page.locator(".evidence-row:not([hidden])");
   expect(await visible.count()).toBeGreaterThan(0);
   await expect(visible.first().locator(".status--production-blueprint")).toBeVisible();
+});
+
+test("evidence explorer links each claim to screenshot, receipt, code, and validation", async ({ page }) => {
+  await page.goto("./", { waitUntil: "networkidle" });
+  const first = page.locator(".evidence-row").first();
+  await expect(first.getByRole("link", { name: "Screenshot" })).toBeVisible();
+  await expect(first.getByRole("link", { name: "Receipt" })).toBeVisible();
+  await expect(first.getByRole("link", { name: "Code" })).toBeVisible();
+  await expect(first.getByRole("link", { name: "Validation" })).toBeVisible();
 });
 
 test("automated accessibility scan finds no serious violations", async ({ page }) => {

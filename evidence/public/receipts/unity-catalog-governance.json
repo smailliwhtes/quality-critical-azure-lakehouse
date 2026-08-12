@@ -1,0 +1,13 @@
+{
+  "captured_at_utc": "2026-08-12T20:36:11.157273Z",
+  "column_mask": "APPLIED",
+  "comments_and_properties": "APPLIED",
+  "limitation": "",
+  "run_id": "dbx-4f218bf223f6",
+  "schema": "part4-governance-control-receipt/v1",
+  "status": "VERIFIED",
+  "execution_commit": "0a689155ad6dd97c5e6b9718c00b44245a7d8e46",
+  "unity_catalog_tags": "APPLIED",
+  "public_run_id": "dbx-4f218bf223f6",
+  "source_run_id_sanitized": true
+}

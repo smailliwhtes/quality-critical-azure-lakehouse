@@ -13,6 +13,14 @@ const repo = content.project.repository;
 const base = import.meta.env.BASE_URL;
 const architecture = `${base}assets/architecture/quality-critical-lakehouse.png`;
 const pdf = `${base}downloads/part4-azure-data-engineering-portfolio.pdf`;
+const heroScreenshots: Record<string, string> = {
+  architecture: "01-architecture.png",
+  "pyspark-transformation": "02-pyspark-transformation.png",
+  "lakeflow-jobs": "03-lakeflow-jobs-dag.png",
+  "unity-catalog-lineage": "04-unity-catalog-lineage.png",
+  "failure-repair": "05-failure-repair.png",
+  "performance-comparison": "06-performance-comparison.png",
+};
 
 function esc(value: string | number) {
   return String(value).replace(/[&<>'"]/g, (character) => ({
@@ -29,11 +37,11 @@ function status(status: Status) {
 }
 
 function codeUrl(path: string) {
-  return `${repo}/blob/build/part4-lakehouse/${path}`;
+  return `${repo}/blob/main/${path}`;
 }
 
 function evidenceFor(item: Journey): EvidenceArtifact | undefined {
-  return evidence.artifacts.find((artifact) => artifact.code_path === item.code || artifact.artifact_id.includes(item.id));
+  return evidence.artifacts.find((artifact) => artifact.artifact_id === item.id);
 }
 
 const capabilityChips = content.capabilities.map((item) => `<li>${esc(item)}</li>`).join("");
@@ -45,6 +53,9 @@ const heroCards = content.hero_path.map((item, index) => `
     <div class="hero-card__index">${String(index + 1).padStart(2, "0")}</div>
     <p class="eyebrow">${esc(item.eyebrow)}</p>
     <h3>${esc(item.title)}</h3>
+    <a class="hero-card__visual" href="${base}evidence/screenshots/${esc(heroScreenshots[item.id])}" aria-label="Open ${esc(item.title)} evidence at full resolution">
+      <img src="${base}evidence/screenshots/${esc(heroScreenshots[item.id])}" alt="${esc(item.what)}" loading="lazy" />
+    </a>
     <div class="hero-card__copy"><h4>What I did</h4><p>${esc(item.what)}</p></div>
     <div class="hero-card__copy"><h4>Why it matters</h4><p>${esc(item.why)}</p></div>
     <footer>${status(item.status as Status)}<a href="#evidence-explorer">Inspect evidence <span aria-hidden="true">→</span></a></footer>
@@ -62,12 +73,15 @@ const evidenceRows = content.engineering_journey.map((item) => {
   const artifact = evidenceFor(item);
   const limitation = artifact?.limitation || (item.status === "PRODUCTION_BLUEPRINT" ? "Bounded Azure execution evidence is pending." : "No platform limitation applies to this deterministic artifact.");
   const receipt = artifact?.receipt ? `<a href="${base}${esc(artifact.receipt.replace("evidence/public/", "evidence/"))}">Receipt</a>` : `<span>Receipt pending</span>`;
-  const commit = artifact?.commit_sha && artifact.commit_sha !== "PENDING" ? artifact.commit_sha.slice(0, 8) : "build branch";
+  const screenshot = artifact?.screenshot ? `<a href="${base}${esc(artifact.screenshot.replace("evidence/public/", "evidence/"))}">Screenshot</a>` : `<span>Screenshot pending</span>`;
+  const validation = artifact?.validation ? `<a href="${esc(codeUrl(artifact.validation))}">Validation</a>` : `<span>Validation pending</span>`;
+  const commit = artifact?.commit_sha && artifact.commit_sha !== "PENDING" ? artifact.commit_sha.slice(0, 8) : "pending";
+  const commitUrl = artifact?.commit_sha && artifact.commit_sha !== "PENDING" ? `${repo}/commit/${artifact.commit_sha}` : `${repo}/commits/main`;
   return `
-    <article class="evidence-row" data-search="${esc(`${item.title} ${item.summary} ${item.code} ${item.status} ${limitation}`.toLowerCase())}" data-status="${esc(item.status)}">
-      <div class="evidence-row__claim"><span class="evidence-row__service">${esc(item.id.replaceAll("-", " "))}</span><h3>${esc(item.title)}</h3><p>${esc(item.summary)}</p></div>
+    <article class="evidence-row" data-search="${esc(`${artifact?.service ?? ""} ${item.title} ${item.summary} ${item.code} ${item.status} ${limitation}`.toLowerCase())}" data-status="${esc(item.status)}">
+      <div class="evidence-row__claim"><span class="evidence-row__service">${esc(artifact?.service ?? item.id.replaceAll("-", " "))}</span><h3>${esc(item.title)}</h3><p>${esc(item.summary)}</p></div>
       <div class="evidence-row__state">${status(item.status as Status)}<p>${esc(limitation)}</p></div>
-      <div class="evidence-row__links"><a href="${esc(codeUrl(item.code))}">Code</a>${receipt}<a href="${repo}/commits/build/part4-lakehouse">Commit: ${esc(commit)}</a></div>
+      <div class="evidence-row__links">${screenshot}${receipt}<a href="${esc(codeUrl(item.code))}">Code</a>${validation}<a href="${esc(commitUrl)}">Commit: ${esc(commit)}</a></div>
     </article>`;
 }).join("");
 
@@ -131,7 +145,7 @@ root.innerHTML = `
 
     <section class="section boundary" aria-labelledby="boundary-title">
       <div><p class="eyebrow">COST + TRUTHFULNESS BOUNDARY</p><h2 id="boundary-title">Fast build. Hard limits. No invented result.</h2><p>Trial-only Databricks, an under-$10 target, a $15 retry stop, and a $20 teardown gate keep the execution window focused. A platform limitation downgrades only that feature; it never becomes a fabricated run, metric, lineage edge, alert, cost, or screenshot.</p></div>
-      <dl><div><dt>Target</dt><dd>${esc(content.boundaries.cost_target)}</dd></div><div><dt>Stop retries</dt><dd>${esc(content.boundaries.retry_stop)}</dd></div><div><dt>Teardown</dt><dd>${esc(content.boundaries.teardown_stop)}</dd></div><div><dt>Compute</dt><dd>1 driver + 1 worker</dd></div></dl>
+      <dl><div><dt>Target</dt><dd>${esc(content.boundaries.cost_target)}</dd></div><div><dt>Stop retries</dt><dd>${esc(content.boundaries.retry_stop)}</dd></div><div><dt>Teardown</dt><dd>${esc(content.boundaries.teardown_stop)}</dd></div><div><dt>Compute</dt><dd>4 vCPU job + 2 vCPU pipeline</dd></div></dl>
     </section>
   </main>
   <footer class="site-footer"><div><strong>${esc(content.project.author)}</strong><span>${esc(content.project.title)}</span></div><div><a href="${repo}">Repository</a><a href="${pdf}">32-page PDF</a><a href="#top">Back to top</a></div></footer>

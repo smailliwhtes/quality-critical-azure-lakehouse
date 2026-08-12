@@ -10,7 +10,7 @@ The target is less than $10 incremental cost for the isolated evidence window. N
 - Actual notifications are configured at 50, 75, and 100 percent.
 - A forecast notification is configured at 100 percent.
 - Databricks is Trial only; paid Premium is never selected as a fallback.
-- One driver plus one worker uses `Standard_DS3_v2`, totaling eight vCPUs within the verified ten-vCPU quota.
+- Capacity fallback uses one single-node `Standard_D4ads_v6` job cluster and one single-node `Standard_D2ads_v6` Lakeflow cluster, peaking at six vCPUs inside the verified ten-vCPU quota.
 - Compute is job-scoped, ephemeral, and aggressively auto-terminated.
 - Event Hubs is Standard with one throughput unit and no auto-inflate.
 - ADLS uses `Standard_LRS` and the business stream is bounded to 20,000 messages.
@@ -27,10 +27,14 @@ Snapshots are attempted before provisioning, after infrastructure deployment, af
 
 At $15, the project stops exploration and retries and moves directly to evidence preservation. At $20, teardown starts immediately even if optional captures remain. No cloud feature is worth exceeding the approved boundary.
 
+## Executed checkpoints
+
+Timestamped snapshots were attempted before provisioning, after infrastructure, after ingestion, and after incident/performance execution. Azure Cost Management returned no usable amount during the bounded window, so every affected receipt records `API_UNAVAILABLE`, an amount of `null`, and `PENDING BILLING SETTLEMENT`. This is not converted to a zero-dollar claim.
+
 ## Current evidence boundary
 
-Budget IaC, thresholds, compute sizing, bounded stream, and fail-closed local budget parsing are `DEMONSTRATED`. Azure cost values remain `PRODUCTION_BLUEPRINT` until a timestamped Cost Management response is captured.
+The $20 budget, 50/75/100 percent actual notifications, 100 percent forecast notification, Trial SKU, compute sizing, bounded stream, and fail-closed parsing are `VERIFIED` or `DEMONSTRATED` as stated in the evidence manifest. An actual incremental dollar result is not available and is not claimed.
 
 ## Cost result
 
-`PENDING BILLING SETTLEMENT`: no actual or estimated project value is published before the bounded deployment produces a source-backed snapshot.
+`PENDING BILLING SETTLEMENT`: the Cost Management query API did not return an amount before teardown. The portfolio publishes that limitation rather than inventing an estimate or treating missing telemetry as zero.

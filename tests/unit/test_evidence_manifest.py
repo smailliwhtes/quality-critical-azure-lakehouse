@@ -1,4 +1,5 @@
 import copy
+import json
 from pathlib import Path
 
 import pytest
@@ -25,6 +26,7 @@ REQUIRED_ARTIFACT_FIELDS = {
 
 def test_public_manifest_uses_v1_contract_and_exact_status_vocabulary() -> None:
     manifest = load_manifest(Path("evidence/public/evidence_manifest.json"))
+    content = json.loads(Path("portfolio/content/project.json").read_text(encoding="utf-8"))
 
     validate_manifest(manifest)
     assert manifest["schema"] == "part4-evidence-manifest/v1"
@@ -34,6 +36,10 @@ def test_public_manifest_uses_v1_contract_and_exact_status_vocabulary() -> None:
         "PRODUCTION_BLUEPRINT",
     ]
     assert manifest["artifacts"]
+    assert len(manifest["artifacts"]) == 19
+    assert [artifact["artifact_id"] for artifact in manifest["artifacts"]] == [
+        item["id"] for item in content["engineering_journey"]
+    ]
     assert all(artifact.keys() >= REQUIRED_ARTIFACT_FIELDS for artifact in manifest["artifacts"])
 
 
@@ -54,4 +60,3 @@ def test_verified_claim_requires_platform_code_receipt_validation_and_hash() -> 
 
     with pytest.raises(ValueError, match="receipt"):
         validate_manifest(invalid)
-

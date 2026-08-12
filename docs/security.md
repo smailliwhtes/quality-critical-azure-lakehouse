@@ -28,10 +28,14 @@ Release scanning covers repository history, tokens, connection strings, SAS sign
 
 The main risks are over-scoped identities, leaked Event Hubs credentials, identifiers embedded in receipts, public screenshots that expose account UI, and teardown scripts that target unrelated resources. Exact resource-group names, authoritative inventory checks, value redaction, and fixed deletion scope reduce those risks.
 
+## Executed controls
+
+ADF used its managed identity for the six-file ADLS copy. The Access Connector backed Unity Catalog storage, external locations, and governed volumes. GitHub's federated identity completed a resource-group-scoped OIDC validation. No long-lived Databricks token or cloud password was created. The public producer, streaming, platform, and governance receipts exclude connection material and account identifiers.
+
 ## Current evidence boundary
 
-The identity, RBAC, storage, Key Vault, OIDC, sanitization, and exact-scope teardown definitions are `DEMONSTRATED` as code. Live role assignments, secret-scope behavior, and resource absence are `PRODUCTION_BLUEPRINT` until Azure readback and sanitized receipts are collected.
+Identity definitions and local scanning are `DEMONSTRATED` as code. Managed-identity data access, Access Connector storage, scoped OIDC deployment, secret-value exclusion, tags/comments, and column masking are `VERIFIED`. Databricks ARM diagnostics remain `PRODUCTION_BLUEPRINT` because the Trial workspace exposed no supported category. Exact-scope resource absence is promoted only after teardown readback.
 
 ## Known limitations
 
-The Trial may restrict workload federation, fine-grained governance, or specific masking and row-filter features. A permission or platform limitation is retained as evidence and only that feature is classified `PRODUCTION_BLUEPRINT`; it is never generalized into a false security claim.
+The Trial exposed no Databricks ARM diagnostic categories and executed Python tasks through Spark Connect without the classic status store. Cost telemetry also remained unavailable during the evidence window. Each limitation is retained at feature level and never generalized into a false security or operations claim.

@@ -1,0 +1,20 @@
+{
+  "schema": "part4-recovery-validation/v1",
+  "captured_at_utc": "2026-08-12T21:00:20.3183821Z",
+  "repair_id": 258937533958267,
+  "rerun_tasks": [
+    "bronze_batch"
+  ],
+  "rerun_dependent_tasks": true,
+  "successful_upstream_rerun": false,
+  "expected_and_recovered_match": true,
+  "clean_content_hash": "85cb97df0b812676d91fba3935c58fcfb0de54f4dc92b23ddcdd71e0a222e806",
+  "recovered_content_hash": "85cb97df0b812676d91fba3935c58fcfb0de54f4dc92b23ddcdd71e0a222e806",
+  "duplicate_business_keys": {
+    "fact_batch_quality": 0,
+    "kpi_quality_summary": 0
+  },
+  "current_version_violations": 0,
+  "validation": "PASS",
+  "execution_commit": "0a689155ad6dd97c5e6b9718c00b44245a7d8e46"
+}

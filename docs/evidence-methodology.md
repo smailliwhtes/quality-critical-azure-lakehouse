@@ -26,7 +26,7 @@ Public files exclude credentials, tokens, connection strings, SAS parameters, ke
 
 ## Screenshot curation
 
-`evidence/public/screenshot_manifest.json` declares exactly 34 meaningful public slots, including architecture, PySpark, Jobs DAG, lineage, failure and repair, and performance as the six recruiter heroes. Missing platform evidence stays visibly `PRODUCTION_BLUEPRINT`; no Azure or Databricks screen is recreated in HTML.
+`evidence/public/screenshot_manifest.json` declares exactly 34 meaningful public slots, including architecture, PySpark, Jobs DAG, lineage, failure and repair, and performance as the six recruiter heroes. Platform captures remain platform captures. Generated panels are labeled as generated artifacts and derive only from public code or machine receipts; they do not imitate Azure or Databricks interfaces.
 
 ## Integrity and reconciliation
 
@@ -34,7 +34,7 @@ Receipts are sanitized before hashing. Counts are reconciled across producer, Ev
 
 ## Current evidence boundary
 
-The manifest schema, status validator, deterministic hashes, capture plan, sanitization policy, and 34-slot curation are `DEMONSTRATED`. Every platform-specific entry remains `PRODUCTION_BLUEPRINT` until its required artifact bundle exists.
+The manifest schema, validator, deterministic hashing, capture pipeline, sanitization policy, and 34-slot curation are `DEMONSTRATED`. Executed Azure and Databricks claims are individually `VERIFIED` only when their required bundle exists. Cost remains pending settlement; the activity-log alert is configured but not fired; the Trial workspace's unsupported ARM diagnostics category is `PRODUCTION_BLUEPRINT`; teardown remains pending until authoritative readback.
 
 ## Release rule
 

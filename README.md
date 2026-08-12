@@ -8,7 +8,7 @@ From batch and streaming telemetry to governed data products. This is an evidenc
 
 ## Engineering scope
 
-`Bicep infrastructure as code` · `ADLS Gen2 medallion storage` · `Azure Data Factory batch ingestion` · `Event Hubs bounded streaming` · `PySpark and Delta Lake transformations` · `Lakeflow pipelines and Jobs` · `Unity Catalog governance and lineage` · `CDC and SCD Type 2 history` · `Failure repair and idempotency proof` · `Spark performance measurement` · `Azure Monitor and Log Analytics` · `OIDC-based CI/CD and verified teardown`
+`Bicep infrastructure as code` · `ADLS Gen2 medallion storage` · `Azure Data Factory batch ingestion` · `Event Hubs bounded streaming` · `PySpark and Delta Lake transformations` · `Lakeflow pipelines and Jobs` · `Unity Catalog governance and lineage` · `CDC and SCD Type 2 history` · `Failure repair and idempotency proof` · `Spark performance measurement` · `Azure Monitor and Log Analytics` · `OIDC-based CI/CD and exact-scope teardown`
 
 ## Business problem
 
@@ -110,6 +110,6 @@ Live deployment intentionally fails closed unless `PART4_BUDGET_USD` is numeric 
 
 ## Current evidence boundary
 
-Local implementation and deterministic tests are represented as `DEMONSTRATED`. Azure workload, lineage, incident, monitoring, cost, CI deployment, and teardown claims remain `PRODUCTION_BLUEPRINT` until their real sanitized artifacts are present. No resource screenshot is treated as proof of workload execution.
+Azure provisioning, scoped identity, ADF batch ingestion, Event Hubs streaming, Lakeflow orchestration and expectations, AUTO CDC, Unity Catalog governance and lineage, failure and focused repair, idempotent recovery, the six-run performance experiment, monitoring configuration, and OIDC-backed deployment validation are `VERIFIED` with sanitized artifacts. Cost remains `PENDING BILLING SETTLEMENT`; the administrative alert was enabled but did not fire; the Trial workspace exposed no Databricks ARM diagnostic category. Exact-scope teardown remains `PRODUCTION_BLUEPRINT` until Azure authoritatively reads back the isolated resource group, its Databricks-managed resource group, and the Part 4 budget as absent. No resource screenshot is treated as proof of workload execution.
 
 The source planning document is private and is not included in this repository or its public metadata.

@@ -1,0 +1,23 @@
+{
+  "schema": "part4-release-validation/v1",
+  "captured_at_utc": "2026-08-12T20:41:01Z",
+  "ci": {
+    "public_run_id": "31638712486",
+    "workflow": "CI",
+    "conclusion": "success",
+    "commit_sha": "e67ceee1a743d047f4f44bfe78a87cbfc40b7856",
+    "url": "https://github.com/smailliwhtes/quality-critical-azure-lakehouse/actions/runs/31638712486"
+  },
+  "oidc_deployment_validation": {
+    "public_run_id": "31618091562",
+    "workflow": "Controlled Azure deployment",
+    "conclusion": "success",
+    "commit_sha": "da7f7dbc09914c7c0a353a37f0922cb19d0d6dd5",
+    "url": "https://github.com/smailliwhtes/quality-critical-azure-lakehouse/actions/runs/31618091562",
+    "scope": "isolated Part 4 resource group",
+    "credential": "GitHub OIDC federated identity"
+  },
+  "long_lived_cloud_password_created": false,
+  "identifiers_included": false,
+  "validation": "PASS"
+}

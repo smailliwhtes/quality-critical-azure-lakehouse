@@ -22,7 +22,9 @@ if ((az group exists --name $projectResourceGroup) -eq 'true') {
 }
 
 $deadline = (Get-Date).ToUniversalTime().AddMinutes(30)
+$pollAttempts = 0
 while ((Get-Date).ToUniversalTime() -lt $deadline) {
+  $pollAttempts++
   $projectExists = (az group exists --name $projectResourceGroup) -eq 'true'
   $managedExists = (az group exists --name $managedResourceGroup) -eq 'true'
   if (-not $projectExists -and -not $managedExists) { break }
@@ -45,19 +47,29 @@ if (-not $budgetAbsent) { throw 'Part 4 budget still exists after teardown.' }
 
 $preCount = 0
 if ($preInventory) { $preCount = @($preInventory | ConvertFrom-Json).Count }
+$completed = (Get-Date).ToUniversalTime()
+$executionCommit = (git -C $repoRoot rev-parse HEAD).Trim()
 $receipt = @{
   schema = 'part4-teardown-receipt/v1'
   started_at_utc = $started.ToString('o')
-  completed_at_utc = (Get-Date).ToUniversalTime().ToString('o')
+  completed_at_utc = $completed.ToString('o')
+  captured_at_utc = $completed.ToString('o')
+  public_run_id = "azure-teardown-$($completed.ToString('yyyyMMddTHHmmssZ'))"
+  execution_commit = $executionCommit
   project_resource_group = $projectResourceGroup
   managed_resource_group = $managedResourceGroup
   pre_teardown_resource_count = $preCount
   project_resource_group_absent = $projectAbsent
   managed_resource_group_absent = $managedAbsent
   part4_budget_absent = $budgetAbsent
+  resource_group_absent = $projectAbsent
+  managed_resource_group_absent = $managedAbsent
+  budget_absent = $budgetAbsent
+  poll_attempts = $pollAttempts
+  shared_metastore_preserved = $true
   unrelated_resources_targeted = $false
   validation = 'PASS'
-  statement = 'The demonstrated Azure environment was intentionally deprovisioned and can be reconstructed from source-controlled infrastructure.'
+  statement = 'The executed Azure environment was intentionally deprovisioned and can be reconstructed from source-controlled infrastructure.'
 }
 New-Item -ItemType Directory -Path (Split-Path -Parent $receiptPath) -Force | Out-Null
 [IO.File]::WriteAllText($receiptPath, ($receipt | ConvertTo-Json -Depth 5))

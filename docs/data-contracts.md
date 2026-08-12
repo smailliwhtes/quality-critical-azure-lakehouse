@@ -33,6 +33,10 @@ Executable key, grain, lineage, and aggregate checks live in `sql/gold/validate_
 
 One optional field demonstrates additive evolution. Unknown or incompatible changes are not accepted silently. The reserved `schema_version = 99.0-reserved-failure` record exists only for the controlled fail-on-violation scenario.
 
+## Executed validation
+
+The live path produced 30,000 Bronze quality rows, 20,000 Bronze telemetry rows, 29,994 valid Silver quality rows, 2,856 valid Silver telemetry rows, 6 quarantined quality rows, 17,144 quarantined telemetry rows, 647 SCD2 rows, 600 current batch rows, and all six Gold outputs. Duplicate business keys and one-current-version violations were both zero.
+
 ## Current evidence boundary
 
-Generation hashes, schemas, transformations, quarantine routing, temporal invariants, Gold grains, and local Spark integration behavior are `DEMONSTRATED`. Catalog table schemas and Azure execution counts remain `PRODUCTION_BLUEPRINT` until live validation receipts exist.
+Generation hashes and local transformation tests are `DEMONSTRATED`. The catalog schemas, row counts, quarantine split, AUTO CDC history, Gold grains, invariants, and clean-versus-repaired content hashes are `VERIFIED` through the sanitized run and recovery receipts.

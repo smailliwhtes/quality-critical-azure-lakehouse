@@ -1,10 +1,10 @@
 {
   "schema": "part4-adf-copy-receipt/v1",
-  "captured_at_utc": "2026-08-12T16:24:19.1088946Z",
+  "captured_at_utc": "2026-08-12T16:29:42.5803384Z",
   "pipeline": "pl_ingest_batch_quality",
   "status": "Succeeded",
-  "public_run_id": "adf-7040081f3db5",
-  "execution_commit": "88f5a298ce31d3b4f28df3b6a9db094250acd2ad",
+  "public_run_id": "adf-cdb88aa65958",
+  "execution_commit": "be574ac3dfb2226cf2e545a1799723eb48cc34fa",
   "source_commit": "836901141adce556adec1811d132127953d52c9b",
   "files_requested": 6,
   "copy_activities": [
@@ -13,18 +13,18 @@
       "status": "Succeeded",
       "rows_read": 5000,
       "rows_copied": 5000,
-      "bytes_read": 1658476,
-      "bytes_written": 1663532,
-      "copy_duration_seconds": 13
+      "bytes_read": 1658529,
+      "bytes_written": 1663586,
+      "copy_duration_seconds": 11
     },
     {
       "activity_name": "CopyQualityJson",
       "status": "Succeeded",
       "rows_read": 5000,
       "rows_copied": 5000,
-      "bytes_read": 1658569,
-      "bytes_written": 1663627,
-      "copy_duration_seconds": 13
+      "bytes_read": 1658476,
+      "bytes_written": 1663532,
+      "copy_duration_seconds": 12
     },
     {
       "activity_name": "CopyQualityJson",
@@ -33,16 +33,16 @@
       "rows_copied": 5000,
       "bytes_read": 1658435,
       "bytes_written": 1663471,
-      "copy_duration_seconds": 10
+      "copy_duration_seconds": 11
     },
     {
       "activity_name": "CopyQualityJson",
       "status": "Succeeded",
       "rows_read": 5000,
       "rows_copied": 5000,
-      "bytes_read": 1658529,
-      "bytes_written": 1663586,
-      "copy_duration_seconds": 13
+      "bytes_read": 1658569,
+      "bytes_written": 1663627,
+      "copy_duration_seconds": 12
     },
     {
       "activity_name": "CopyQualityJson",
@@ -60,7 +60,7 @@
       "rows_copied": 5000,
       "bytes_read": 1658456,
       "bytes_written": 1663525,
-      "copy_duration_seconds": 11
+      "copy_duration_seconds": 10
     }
   ],
   "managed_identity": true,

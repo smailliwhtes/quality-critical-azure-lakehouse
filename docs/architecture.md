@@ -23,13 +23,13 @@ Bronze preserves source fidelity and provenance. Silver enforces types, business
 
 The cross-cutting trust path is Microsoft Entra managed identity to scoped Azure RBAC, then Access Connector to ADLS and Unity Catalog storage objects. Key Vault is reserved for the Event Hubs credential only if the runtime requires it.
 
-## Operating boundaries
+## Executed compute boundary
 
-The implementation targets East US 2, Databricks Trial only, one `Standard_DS3_v2` driver plus one worker, ephemeral job compute, and aggressive termination. New compute and retries stop at $15; teardown begins immediately at $20.
+The workspace ran in East US 2 on the Portal-confirmed `trial` SKU and Hybrid mode. East US 2 capacity and live node metadata did not support the planned `Standard_DS3_v2` shape. The bounded fallback used one single-node `Standard_D4ads_v6` job cluster (4 vCPUs) and one single-node `Standard_D2ads_v6` Lakeflow cluster (2 vCPUs), for a peak verified plan of 6 vCPUs inside the 10-vCPU quota. Databricks Runtime was `17.3.x-scala2.13` (17.3 LTS, Spark 4.0.0, Scala 2.13).
 
 ## Current evidence boundary
 
-The architecture composition, modular Bicep, deterministic transforms, and orchestration definition are `DEMONSTRATED`. Azure resource, workload, lineage, alert, cost, and teardown behavior remains `PRODUCTION_BLUEPRINT` until the bounded execution receipts and sanitized platform captures are present.
+Provisioning, managed-identity access, ADF batch ingestion, Event Hubs streaming, Bronze/Silver/Gold processing, Lakeflow orchestration, AUTO CDC, Unity Catalog governance and lineage, controlled failure, focused repair, and performance execution are `VERIFIED`. The architecture rendering and production extensions are `DEMONSTRATED`. Databricks ARM diagnostics are `PRODUCTION_BLUEPRINT` because the live Trial workspace exposed no diagnostic category through ARM. Cost remains `PENDING BILLING SETTLEMENT`, and teardown is promoted only after authoritative absence readback.
 
 ## Production blueprint extensions
 

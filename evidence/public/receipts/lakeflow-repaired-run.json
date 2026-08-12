@@ -1,0 +1,53 @@
+{
+  "aggregates": {
+    "batches_processed_sum": 29994,
+    "mean_quality_pass_rate": 1.0,
+    "records_quarantined_sum": 4
+  },
+  "captured_at_utc": "2026-08-12T20:37:18.32311Z",
+  "catalog": "part4_ops",
+  "content_hash_definition": {
+    "algorithm": "SHA-256 over ordered canonical row SHA-256 values",
+    "excluded_volatile_provenance": [
+      "ingest_timestamp_utc",
+      "pipeline_run_id"
+    ]
+  },
+  "content_hashes": {
+    "gold.fact_batch_quality": "d370e80d35e209d0e2b79f26ea4857689a1d9a6e39f88250443018a70d9d123c",
+    "gold.fact_cold_chain_excursion": "b8091fec0ab67271138e85e5f26f4a10c6c196171b12708bfaf4ec8c3c8bba8d",
+    "gold.kpi_quality_summary": "48cf6210b72448d0c86591d54ef7add020d17b57e59f86a92d17d68c15680c97",
+    "silver.batch_history_scd2": "8b929f7c26d76dce5ac56a456c9d037e4876c52c3ba0bb81ef60c4da69b4e2e3",
+    "silver.batch_quality_valid": "35c08446cfc43738756a7876fd7f7adc3356370ddd18e71ff9c85b4fc711244d",
+    "silver.sensor_telemetry_valid": "534a9498a6389830d8df9119394c0fe4ca13d3de1f5bad38782963f1bb68cbed"
+  },
+  "current_version_violations": 0,
+  "duplicate_business_keys": {
+    "fact_batch_quality": 0,
+    "kpi_quality_summary": 0
+  },
+  "execution_commit": "c21061a8fb5b05301cabf28e2233e5e4dc9d5d98",
+  "row_counts": {
+    "bronze.batch_change_events": 648,
+    "bronze.batch_quality_raw": 30000,
+    "bronze.sensor_telemetry_raw": 20000,
+    "gold.dim_batch_history": 647,
+    "gold.dim_product": 20,
+    "gold.dim_site": 12,
+    "gold.fact_batch_quality": 29994,
+    "gold.fact_cold_chain_excursion": 737,
+    "gold.kpi_quality_summary": 3780,
+    "silver.batch_history_scd2": 647,
+    "silver.batch_master_current": 600,
+    "silver.batch_quality_valid": 29994,
+    "silver.quarantined_quality_records": 6,
+    "silver.quarantined_telemetry": 17144,
+    "silver.sensor_telemetry_valid": 2856
+  },
+  "run_id": "dbx-0b617b02b928",
+  "runtime": "17.3.x-scala2.13",
+  "schema": "part4-lakeflow-job-receipt/v1",
+  "validation": "PASS",
+  "public_run_id": "dbx-0b617b02b928",
+  "source_run_id_sanitized": true
+}

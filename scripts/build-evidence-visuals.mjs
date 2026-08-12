@@ -299,8 +299,8 @@ if (performance) {
   const opt = performance.runs.optimized;
   const comparisonMetrics = [
     { label: "BASELINE MEDIAN", value: seconds(performance.comparison.baseline_median_wall_time_seconds), hint: "3 runs / same compute" },
-    { label: "OPTIMIZED MEDIAN", value: seconds(performance.comparison.optimized_median_wall_time_seconds), hint: "broadcast + no repartition", color: "#4cdfc3" },
-    { label: "WALL-TIME CHANGE", value: `${performance.comparison.measured_wall_time_change_percent > 0 ? "+" : ""}${performance.comparison.measured_wall_time_change_percent}%`, hint: "published without cherry-picking" },
+    { label: "OPTIMIZED MEDIAN", value: seconds(performance.comparison.optimized_median_wall_time_seconds), hint: "broadcast + no repartition" },
+    { label: "WALL-TIME CHANGE", value: `${performance.comparison.measured_wall_time_change_percent > 0 ? "+" : ""}${performance.comparison.measured_wall_time_change_percent}%`, hint: "published without cherry-picking", color: "#f2bd5b" },
   ];
   visuals.push(["06-performance-comparison.png", {
     eyebrow: "SPARK / THREE BY THREE", title: "Measured optimization on five million skewed rows",
@@ -355,14 +355,14 @@ if (monitoring) {
 
 if (release) {
   visuals.push(["33-github-actions.png", {
-    eyebrow: "GITHUB ACTIONS / FEDERATED RELEASE", title: "CI and Azure OIDC validation passed without a cloud password",
+    eyebrow: "GITHUB ACTIONS / FEDERATED RELEASE", title: "CI and Azure OIDC both passed without passwords",
     subtitle: "The release receipt binds workflow conclusions to public commit references.", ...shared,
-    metrics: [{ label: "CI", value: release.ci_conclusion, hint: `run ${release.ci_public_run_id}` },
-      { label: "OIDC DEPLOY", value: release.oidc_conclusion, hint: `run ${release.oidc_public_run_id}`, color: "#4cdfc3" },
+    metrics: [{ label: "CI", value: release.ci.conclusion.toUpperCase(), hint: `run ${release.ci.public_run_id}` },
+      { label: "OIDC DEPLOY", value: release.oidc_deployment_validation.conclusion.toUpperCase(), hint: `run ${release.oidc_deployment_validation.public_run_id}`, color: "#4cdfc3" },
       { label: "LONG-LIVED SECRET", value: "NONE", hint: "federated managed identity" }],
     rows: [["CI scope", "Python / Spark / Bicep / bundle / site / PDF / publication scans"],
       ["OIDC scope", "read and write validation only inside rg-qcal-part4-dev"], ["Repository", "smailliwhtes/quality-critical-azure-lakehouse"],
-      ["Execution commit", release.commit_sha], ["CI conclusion", release.ci_conclusion], ["OIDC conclusion", release.oidc_conclusion],
+      ["CI commit", release.ci.commit_sha], ["CI conclusion", release.ci.conclusion.toUpperCase()], ["OIDC conclusion", release.oidc_deployment_validation.conclusion.toUpperCase()],
       ["Credential boundary", "no client secret or Databricks token created"]], receipt: "evidence/public/receipts/release-validation.json", captured: release.captured_at_utc,
   }]);
 }
@@ -383,6 +383,11 @@ if (teardown) {
 
 let generated = 0;
 for (const [filename, spec] of visuals) {
-  if (await render(filename, spec)) generated += 1;
+  const preservePlatformCapture = new Set([
+    "13-adf-pipeline.png",
+    "14-adf-copy-metrics.png",
+    "15-event-hubs-metrics.png",
+  ]).has(filename);
+  if (await render(filename, spec, { preserve: preservePlatformCapture })) generated += 1;
 }
 console.log(`Built ${generated} evidence visuals from public code and receipts.`);
