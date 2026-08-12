@@ -1,0 +1,28 @@
+{
+  "schema": "part4-platform-configuration/v1",
+  "captured_at_utc": "2026-08-12T16:25:49.2263214Z",
+  "workspace_sku": "trial",
+  "workspace_mode": "hybrid",
+  "runtime_key": "17.3.x-scala2.13",
+  "runtime_label": "17.3 LTS (includes Apache Spark 4.0.0, Scala 2.13)",
+  "primary_job_compute": {
+    "driver_count": 1,
+    "node_type": "Standard_DS3_v2",
+    "worker_count": 1,
+    "vcpus": 8
+  },
+  "overlapping_pipeline_compute": {
+    "node_type": "Standard_D2ads_v6",
+    "vcpus": 2,
+    "single_node": true
+  },
+  "peak_verified_quota_plan_vcpus": 10,
+  "unity_catalog_metastore_attached": true,
+  "storage_credential": "AZURE_MANAGED_IDENTITY_ACCESS_CONNECTOR",
+  "secret_backend": "EXISTING",
+  "databricks_arm_diagnostics": "PRODUCTION_BLUEPRINT_PLATFORM_UNSUPPORTED",
+  "databricks_arm_diagnostics_limitation": "The live Trial workspace exposed no diagnostic log or metric categories through ARM.",
+  "long_lived_token_created": false,
+  "current_user_recorded_publicly": false,
+  "execution_commit": "88f5a298ce31d3b4f28df3b6a9db094250acd2ad"
+}

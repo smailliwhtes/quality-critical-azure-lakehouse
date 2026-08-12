@@ -1,0 +1,13 @@
+{
+  "bounded": true,
+  "completed_at_utc": "2026-08-12T16:25:52.935262Z",
+  "connection_material_included": false,
+  "event_hub_name": "quality-telemetry",
+  "events_attempted": 20000,
+  "events_emitted": 20000,
+  "schema": "part4-event-hubs-producer-receipt/v1",
+  "seed": 20260812,
+  "source_file": "sensor_messages.jsonl",
+  "source_sha256": "51908735622a658e7b1d0b61949a29ee34c4f2df06f3d166c69c614866df227d",
+  "started_at_utc": "2026-08-12T16:25:49.498474Z"
+}

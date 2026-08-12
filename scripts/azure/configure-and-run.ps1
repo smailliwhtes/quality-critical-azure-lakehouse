@@ -510,6 +510,10 @@ try {
   $bundleDeployOutput = & $databricks bundle deploy -t dev @bundleArguments 2> $commandErrorPath
   if ($LASTEXITCODE -ne 0) { throw 'Databricks bundle deploy failed.' }
   Write-PrivateText -Name 'bundle-deploy.stdout.txt' -Text ($bundleDeployOutput -join [Environment]::NewLine)
+  $bundleSummaryOutput = & $databricks bundle summary -t dev @bundleArguments -o json 2> $commandErrorPath
+  if ($LASTEXITCODE -ne 0) { throw 'Databricks bundle summary failed.' }
+  Write-PrivateText -Name 'bundle-summary.json' -Text ($bundleSummaryOutput -join [Environment]::NewLine)
+  $bundleSummary = ($bundleSummaryOutput -join [Environment]::NewLine) | ConvertFrom-Json
 } finally {
   Pop-Location
 }
@@ -535,31 +539,36 @@ Write-PublicJson 'platform-configuration.json' ([ordered]@{
 })
 
 Write-Host 'Emitting exactly 20,000 deterministic Event Hubs messages.'
-$env:EVENT_HUB_CONNECTION_STRING = $connection
-$previousPythonPath = $env:PYTHONPATH
-$env:PYTHONPATH = Join-Path $repoRoot 'src'
-try {
-  & $python -m qcal.cli send-telemetry `
-    --source (Join-Path $repoRoot 'data\synthetic\event_hubs\sensor_messages.jsonl') `
-    --event-hub-name 'quality-telemetry' --message-limit 20000 `
-    --receipt (Join-Path $publicReceipts 'event-hubs-producer.json')
-  if ($LASTEXITCODE -ne 0) { throw 'The bounded Event Hubs producer failed.' }
-} finally {
-  Remove-Item Env:EVENT_HUB_CONNECTION_STRING -ErrorAction SilentlyContinue
-  $env:PYTHONPATH = $previousPythonPath
-  $connection = $null
+$producerReceiptPath = Join-Path $publicReceipts 'event-hubs-producer.json'
+$producerAlreadyCompleted = $false
+if (Test-Path -LiteralPath $producerReceiptPath) {
+  $existingProducerReceipt = Get-Content -LiteralPath $producerReceiptPath -Raw | ConvertFrom-Json
+  $producerAlreadyCompleted = $existingProducerReceipt.events_emitted -eq 20000 -and `
+    $existingProducerReceipt.connection_material_included -eq $false
 }
+if (-not $producerAlreadyCompleted) {
+  $env:EVENT_HUB_CONNECTION_STRING = $connection
+  $previousPythonPath = $env:PYTHONPATH
+  $env:PYTHONPATH = Join-Path $repoRoot 'src'
+  try {
+    & $python -m qcal.cli send-telemetry `
+      --source (Join-Path $repoRoot 'data\synthetic\event_hubs\sensor_messages.jsonl') `
+      --event-hub-name 'quality-telemetry' --message-limit 20000 `
+      --receipt $producerReceiptPath
+    if ($LASTEXITCODE -ne 0) { throw 'The bounded Event Hubs producer failed.' }
+  } finally {
+    Remove-Item Env:EVENT_HUB_CONNECTION_STRING -ErrorAction SilentlyContinue
+    $env:PYTHONPATH = $previousPythonPath
+  }
+} else {
+  Write-Host 'Reusing the verified 20,000-message producer receipt; no duplicate messages emitted.'
+}
+$connection = $null
 Invoke-CostCheckpoint -Stage 'ingestion'
 
-$lakehouseJob = Invoke-ExternalJson -Command $databricks -Arguments @(
-  'jobs', 'list', '--name', 'part4-quality-critical-lakehouse', '-o', 'json'
-) -FailureMessage 'Deployed lakehouse job discovery failed.'
-$lakehouseJobId = [long]@($lakehouseJob.jobs)[0].job_id
+$lakehouseJobId = [long]$bundleSummary.resources.jobs.part4_lakehouse_job.id
 if (-not $lakehouseJobId) { throw 'The deployed lakehouse job was not found.' }
-$performanceJob = Invoke-ExternalJson -Command $databricks -Arguments @(
-  'jobs', 'list', '--name', 'part4-spark-performance-comparison', '-o', 'json'
-) -FailureMessage 'Deployed performance job discovery failed.'
-$performanceJobId = [long]@($performanceJob.jobs)[0].job_id
+$performanceJobId = [long]$bundleSummary.resources.jobs.part4_performance_job.id
 if (-not $performanceJobId) { throw 'The deployed performance job was not found.' }
 
 function Start-LakehouseRun([string]$IncidentMode) {
