@@ -12,6 +12,8 @@ variables:
     default: part4_ops
   node_type_id:
     default: Standard_DS3_v2
+  pipeline_node_type_id:
+    default: Standard_D2ads_v6
   spark_version:
     description: Exact newest stable LTS runtime discovered from the Trial workspace.
     default: AUTO_LTS_DISCOVERY_REQUIRED
@@ -40,7 +42,7 @@ resources:
             path: ./pipelines/lakeflow/quality_pipeline.py
       clusters:
         - label: default
-          node_type_id: Standard_DS2_v2
+          node_type_id: ${var.pipeline_node_type_id}
           num_workers: 0
           spark_conf:
             spark.databricks.cluster.profile: singleNode
@@ -63,7 +65,7 @@ resources:
             path: ./pipelines/lakeflow/scd2_auto_cdc.py
       clusters:
         - label: default
-          node_type_id: Standard_DS2_v2
+          node_type_id: ${var.pipeline_node_type_id}
           num_workers: 0
           spark_conf:
             spark.databricks.cluster.profile: singleNode

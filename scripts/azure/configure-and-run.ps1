@@ -476,14 +476,25 @@ $nodeTypes = Invoke-ExternalJson -Command $databricks -Arguments @(
   'clusters', 'list-node-types', '-o', 'json'
 ) -FailureMessage 'Databricks node-type discovery failed.'
 $availableNodeTypes = @($nodeTypes.node_types | ForEach-Object { $_.node_type_id })
-if ('Standard_DS3_v2' -notin $availableNodeTypes -or 'Standard_DS2_v2' -notin $availableNodeTypes) {
-  throw 'The quota-bounded Standard_DS3_v2 and Standard_DS2_v2 node types are not both available.'
+if ('Standard_DS3_v2' -notin $availableNodeTypes) {
+  throw 'The approved Standard_DS3_v2 primary job node type is not available.'
+}
+$pipelineNodeType = if ('Standard_D2ads_v6' -in $availableNodeTypes) {
+  'Standard_D2ads_v6'
+} else {
+  [string]@($nodeTypes.node_types | Where-Object {
+    $_.num_cores -eq 2 -and -not $_.is_deprecated -and $_.node_type_id -notmatch 'NC|ND|NV|GPU'
+  } | Sort-Object node_type_id)[0].node_type_id
+}
+if (-not $pipelineNodeType) {
+  throw 'No supported two-vCPU single-node pipeline type was exposed by the Trial workspace.'
 }
 
 $bundleVariables = @(
   "catalog=$CatalogName",
   "spark_version=$sparkVersion",
   'node_type_id=Standard_DS3_v2',
+  "pipeline_node_type_id=$pipelineNodeType",
   "storage_account_name=$storageAccountName",
   "event_hubs_namespace=$eventHubsNamespace",
   'event_hub_name=quality-telemetry',
@@ -509,7 +520,7 @@ Write-PublicJson 'platform-configuration.json' ([ordered]@{
   runtime_key = $sparkVersion
   runtime_label = $sparkVersionLabel
   primary_job_compute = @{ node_type = 'Standard_DS3_v2'; driver_count = 1; worker_count = 1; vcpus = 8 }
-  overlapping_pipeline_compute = @{ node_type = 'Standard_DS2_v2'; single_node = $true; vcpus = 2 }
+  overlapping_pipeline_compute = @{ node_type = $pipelineNodeType; single_node = $true; vcpus = 2 }
   peak_verified_quota_plan_vcpus = 10
   unity_catalog_metastore_attached = [bool]$metastore
   storage_credential = 'AZURE_MANAGED_IDENTITY_ACCESS_CONNECTOR'
