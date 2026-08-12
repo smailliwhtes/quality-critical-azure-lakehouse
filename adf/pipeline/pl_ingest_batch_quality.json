@@ -63,8 +63,7 @@
                     "filePattern": "setOfObjects"
                   }
                 },
-                "enableStaging": false,
-                "validateDataConsistency": true
+                "enableStaging": false
               },
               "inputs": [
                 {
