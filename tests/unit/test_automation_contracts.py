@@ -107,7 +107,12 @@ def test_cloud_runner_configures_and_executes_every_required_path() -> None:
 def test_pages_workflow_publishes_only_validated_dist_artifact() -> None:
     workflow = yaml.safe_load((ROOT / ".github/workflows/pages.yml").read_text(encoding="utf-8"))
     jobs = workflow["jobs"]
+    workflow_text = (ROOT / ".github/workflows/pages.yml").read_text(encoding="utf-8")
 
     assert "build" in jobs and "deploy" in jobs
     assert "npm run check" in str(jobs["build"])
     assert "portfolio/site/dist" in str(jobs["build"])
+    assert "git restore -- evidence/public" in workflow_text
+    assert "portfolio/pdf/part4-azure-data-engineering-portfolio.pdf" in workflow_text
+    assert "npm run check:pdf" in workflow_text
+    assert "npm run build:site" in workflow_text

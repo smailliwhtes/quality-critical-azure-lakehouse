@@ -25,6 +25,13 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run check
+      - name: Package the exact committed release artifacts
+        run: |
+          git restore -- evidence/public portfolio/architecture/quality-critical-lakehouse.png portfolio/pdf/part4-azure-data-engineering-portfolio.pdf
+          npm run check:content
+          npm run scan:publication
+          npm run check:pdf
+          npm run build:site
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
