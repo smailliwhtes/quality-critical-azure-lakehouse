@@ -45,7 +45,6 @@ resource vault 'Microsoft.KeyVault/vaults@2023-07-01' = {
   tags: tags
   properties: {
     accessPolicies: concat(deployerAccessPolicy, databricksAccessPolicy)
-    enablePurgeProtection: false
     enableRbacAuthorization: false
     enableSoftDelete: true
     publicNetworkAccess: 'Enabled'
