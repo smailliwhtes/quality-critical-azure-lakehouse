@@ -702,6 +702,12 @@ if ($incidentRunId) {
 } else {
   $incidentRunId = Start-LakehouseRun -IncidentMode 'true'
   $incidentRun = Wait-DatabricksRun -RunId $incidentRunId -ExpectSuccess $false
+  $originalAttempt = $null
+}
+$incidentResult = if ($originalAttempt) {
+  [string]$originalAttempt.state.result_state
+} else {
+  [string]$incidentRun.state.result_state
 }
 $qualityFailureTask = @($incidentRun.tasks | Where-Object {
   $_.task_key -eq 'quality_gate' -and $_.attempt_number -eq 0
@@ -717,7 +723,7 @@ Write-PublicJson 'lakeflow-controlled-incident.json' ([ordered]@{
   schema = 'part4-controlled-incident-receipt/v1'
   captured_at_utc = (Get-Date).ToUniversalTime().ToString('o')
   public_run_id = "dbx-$((Get-Sha256 "$incidentRunId").Substring(0, 12))"
-  job_result = [string]$incidentRun.state.result_state
+  job_result = $incidentResult
   failed_task = 'quality_gate'
   hard_contract = 'reserved_schema_contract'
   incident_input = 'reserved_schema_failure.jsonl'
