@@ -735,7 +735,9 @@ Write-PublicJson 'lakeflow-controlled-incident.json' ([ordered]@{
 Write-Host 'Repairing only the affected Bronze path and its downstream dependencies.'
 $repairId = $ResumeRepairId
 if ($repairId) {
-  $repairAttempt = @($incidentRun.repair_history | Where-Object { [long]$_.id -eq $repairId })[0]
+  $repairAttempt = @($incidentRun.repair_history | Where-Object {
+    $_.PSObject.Properties.Name -contains 'id' -and [long]$_.id -eq $repairId
+  })[0]
   if (-not $repairAttempt) { throw 'ResumeRepairId was not found on the controlled-incident run.' }
   Write-Host "Reusing Databricks repair $repairId."
 } else {
