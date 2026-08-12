@@ -504,10 +504,12 @@ $bundleArguments = @()
 foreach ($variable in $bundleVariables) { $bundleArguments += @('--var', $variable) }
 Push-Location $repoRoot
 try {
-  & $databricks bundle validate -t dev @bundleArguments 2> $commandErrorPath
+  $bundleValidationOutput = & $databricks bundle validate -t dev @bundleArguments 2> $commandErrorPath
   if ($LASTEXITCODE -ne 0) { throw 'Databricks bundle validate failed.' }
-  & $databricks bundle deploy -t dev @bundleArguments 2> $commandErrorPath
+  Write-PrivateText -Name 'bundle-validate.stdout.txt' -Text ($bundleValidationOutput -join [Environment]::NewLine)
+  $bundleDeployOutput = & $databricks bundle deploy -t dev @bundleArguments 2> $commandErrorPath
   if ($LASTEXITCODE -ne 0) { throw 'Databricks bundle deploy failed.' }
+  Write-PrivateText -Name 'bundle-deploy.stdout.txt' -Text ($bundleDeployOutput -join [Environment]::NewLine)
 } finally {
   Pop-Location
 }
