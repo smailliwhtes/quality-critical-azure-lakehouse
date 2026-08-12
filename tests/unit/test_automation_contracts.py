@@ -87,6 +87,9 @@ def test_cloud_runner_configures_and_executes_every_required_path() -> None:
     assert "Standard_D4ads_v6" in script
     assert "PSObject.Properties['status']" in script
     assert ".node_info.status" not in script
+    assert "ResumeCleanRunId" in script
+    assert "unknown-run.json" in script
+    assert "public_run_id" in script
     assert "EVENT_HUB_CONNECTION_STRING" in script
     assert "primaryConnectionString" in script
     assert "Write-Host $connection" not in script

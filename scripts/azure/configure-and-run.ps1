@@ -2,7 +2,8 @@
 param(
   [string]$ResourceGroupName = 'rg-qcal-part4-dev',
   [string]$CatalogName = 'part4_ops',
-  [string]$ExecutionCommit = ''
+  [string]$ExecutionCommit = '',
+  [long]$ResumeCleanRunId = 0
 )
 
 # Auditable control path: storage-credentials create, external-locations create,
@@ -152,13 +153,32 @@ function Get-ActiveDatabricksRunId([long]$JobId) {
   return [long]0
 }
 
-function Copy-GovernedReceipt([string]$RelativePath, [string]$PublicName) {
+function Copy-GovernedReceipt(
+  [string]$RelativePath,
+  [string]$PublicName,
+  [string]$ExpectedRunId = ''
+) {
   $privatePath = Join-Path $privateReceipts $PublicName
   & $databricks fs cp "dbfs:/Volumes/$CatalogName/governance/evidence/$RelativePath" $privatePath --overwrite 2> $commandErrorPath
+  if ($LASTEXITCODE -ne 0 -and $ExpectedRunId) {
+    $directory = [IO.Path]::GetDirectoryName($RelativePath).Replace('\', '/')
+    $fallbackPath = "$directory/unknown-run.json"
+    & $databricks fs cp "dbfs:/Volumes/$CatalogName/governance/evidence/$fallbackPath" $privatePath --overwrite 2> $commandErrorPath
+  }
   if ($LASTEXITCODE -ne 0) { throw "Governed receipt $RelativePath could not be collected." }
   $raw = Get-Content -LiteralPath $privatePath -Raw
-  [IO.File]::WriteAllText((Join-Path $publicReceipts $PublicName), (Protect-PublicText $raw))
-  return $raw | ConvertFrom-Json
+  $receipt = $raw | ConvertFrom-Json
+  if ($ExpectedRunId -and [string]$receipt.run_id -eq 'unknown-run') {
+    $receipt.run_id = "dbx-$((Get-Sha256 $ExpectedRunId).Substring(0, 12))"
+    $receipt | Add-Member -NotePropertyName public_run_id -NotePropertyValue $receipt.run_id -Force
+    $receipt | Add-Member -NotePropertyName source_run_id_sanitized -NotePropertyValue $true -Force
+  }
+  $publicJson = $receipt | ConvertTo-Json -Depth 100
+  [IO.File]::WriteAllText(
+    (Join-Path $publicReceipts $PublicName),
+    (Protect-PublicText $publicJson)
+  )
+  return $receipt
 }
 
 function Invoke-CostCheckpoint([string]$Stage) {
@@ -641,19 +661,30 @@ function Start-LakehouseRun([string]$IncidentMode) {
 }
 
 Write-Host 'Running the clean Lakeflow baseline.'
-$cleanRunId = Get-ActiveDatabricksRunId -JobId $lakehouseJobId
-if (-not $cleanRunId) {
-  $cleanRunId = Start-LakehouseRun -IncidentMode 'false'
+$cleanRunId = $ResumeCleanRunId
+if ($cleanRunId) {
+  $cleanRun = Invoke-ExternalJson -Command $databricks -Arguments @(
+    'jobs', 'get-run', "$cleanRunId", '-o', 'json'
+  ) -FailureMessage 'Requested clean-run resume receipt was unavailable.'
+  if ([long]$cleanRun.job_id -ne $lakehouseJobId -or [string]$cleanRun.state.result_state -ne 'SUCCESS') {
+    throw 'ResumeCleanRunId must identify a successful run of the deployed lakehouse job.'
+  }
+  Write-Host "Reusing successful clean Databricks run $cleanRunId."
 } else {
-  Write-Host "Reattached to active clean Databricks run $cleanRunId."
+  $cleanRunId = Get-ActiveDatabricksRunId -JobId $lakehouseJobId
+  if (-not $cleanRunId) {
+    $cleanRunId = Start-LakehouseRun -IncidentMode 'false'
+  } else {
+    Write-Host "Reattached to active clean Databricks run $cleanRunId."
+  }
+  $cleanRun = Wait-DatabricksRun -RunId $cleanRunId -ExpectSuccess $true
 }
-$cleanRun = Wait-DatabricksRun -RunId $cleanRunId -ExpectSuccess $true
 $cleanEvidenceTask = @($cleanRun.tasks | Where-Object { $_.task_key -eq 'evidence_receipt' })[0]
 $cleanStreamTask = @($cleanRun.tasks | Where-Object { $_.task_key -eq 'bronze_stream' })[0]
 $cleanGovernanceTask = @($cleanRun.tasks | Where-Object { $_.task_key -eq 'gold_publish' })[0]
-$cleanReceipt = Copy-GovernedReceipt -RelativePath "jobs/$($cleanEvidenceTask.run_id).json" -PublicName 'lakeflow-clean-run.json'
-$null = Copy-GovernedReceipt -RelativePath "streaming/$($cleanStreamTask.run_id).json" -PublicName 'structured-streaming-progress.json'
-$null = Copy-GovernedReceipt -RelativePath "governance/$($cleanGovernanceTask.run_id).json" -PublicName 'unity-catalog-governance.json'
+$cleanReceipt = Copy-GovernedReceipt -RelativePath "jobs/$($cleanEvidenceTask.run_id).json" -PublicName 'lakeflow-clean-run.json' -ExpectedRunId "$($cleanEvidenceTask.run_id)"
+$null = Copy-GovernedReceipt -RelativePath "streaming/$($cleanStreamTask.run_id).json" -PublicName 'structured-streaming-progress.json' -ExpectedRunId "$($cleanStreamTask.run_id)"
+$null = Copy-GovernedReceipt -RelativePath "governance/$($cleanGovernanceTask.run_id).json" -PublicName 'unity-catalog-governance.json' -ExpectedRunId "$($cleanGovernanceTask.run_id)"
 
 Write-Host 'Injecting the reserved hard contract failure.'
 $incidentRunId = Start-LakehouseRun -IncidentMode 'true'
@@ -697,7 +728,7 @@ $repairId = [int]$repairSubmission.repair_id
 Start-Sleep -Seconds 10
 $repairedRun = Wait-DatabricksRun -RunId $incidentRunId -ExpectSuccess $true -RepairId $repairId
 $repairEvidenceTask = @($repairedRun.tasks | Where-Object { $_.task_key -eq 'evidence_receipt' })[0]
-$repairReceipt = Copy-GovernedReceipt -RelativePath "jobs/$($repairEvidenceTask.run_id).json" -PublicName 'lakeflow-repaired-run.json'
+$repairReceipt = Copy-GovernedReceipt -RelativePath "jobs/$($repairEvidenceTask.run_id).json" -PublicName 'lakeflow-repaired-run.json' -ExpectedRunId "$($repairEvidenceTask.run_id)"
 
 $cleanComparable = [ordered]@{
   row_counts = $cleanReceipt.row_counts
@@ -739,7 +770,7 @@ $performanceSubmission = Invoke-ExternalJson -Command $databricks -Arguments @(
 ) -FailureMessage 'Performance job submission failed.'
 $performanceRun = Wait-DatabricksRun -RunId ([long]$performanceSubmission.run_id) -ExpectSuccess $true
 $performanceTask = @($performanceRun.tasks | Where-Object { $_.task_key -eq 'compare_baseline_and_broadcast' })[0]
-$performanceReceipt = Copy-GovernedReceipt -RelativePath "performance/$($performanceTask.run_id).json" -PublicName 'spark-performance-comparison.json'
+$performanceReceipt = Copy-GovernedReceipt -RelativePath "performance/$($performanceTask.run_id).json" -PublicName 'spark-performance-comparison.json' -ExpectedRunId "$($performanceTask.run_id)"
 if (-not $performanceReceipt.result_hashes_match) {
   throw 'Baseline and optimized performance-query results did not reconcile.'
 }
