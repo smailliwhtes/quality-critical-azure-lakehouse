@@ -11,7 +11,7 @@ variables:
   catalog:
     default: part4_ops
   node_type_id:
-    default: Standard_E4as_v4
+    default: Standard_D4ads_v6
   pipeline_node_type_id:
     default: Standard_D2ads_v6
   spark_version:
@@ -86,9 +86,6 @@ resources:
             spark_version: ${var.spark_version}
             node_type_id: ${var.node_type_id}
             num_workers: 0
-            driver_node_type_flexibility:
-              alternate_node_type_ids:
-                - Standard_E4ds_v4
             data_security_mode: USER_ISOLATION
             runtime_engine: STANDARD
             spark_conf:
@@ -228,9 +225,6 @@ resources:
             spark_version: ${var.spark_version}
             node_type_id: ${var.node_type_id}
             num_workers: 0
-            driver_node_type_flexibility:
-              alternate_node_type_ids:
-                - Standard_E4ds_v4
             data_security_mode: USER_ISOLATION
             runtime_engine: STANDARD
             spark_conf:

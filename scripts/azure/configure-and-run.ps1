@@ -511,18 +511,20 @@ $sparkVersionLabel = [string]$ltsVersions[0].name
 $nodeTypes = Invoke-ExternalJson -Command $databricks -Arguments @(
   'clusters', 'list-node-types', '-o', 'json'
 ) -FailureMessage 'Databricks node-type discovery failed.'
-$availableNodeTypes = @($nodeTypes.node_types | ForEach-Object { $_.node_type_id })
+$enabledNodeTypes = @($nodeTypes.node_types | Where-Object {
+  @($_.node_info.status).Count -eq 0
+} | ForEach-Object { $_.node_type_id })
 $requestedPrimaryNodeType = 'Standard_DS3_v2'
-$primaryNodeType = 'Standard_E4as_v4'
-$flexibleAlternateNodeType = 'Standard_E4ds_v4'
-if ($primaryNodeType -notin $availableNodeTypes -or $flexibleAlternateNodeType -notin $availableNodeTypes) {
-  throw 'The quota-safe flexible E4 node types are not available.'
+$primaryNodeType = 'Standard_D4ads_v6'
+if ($primaryNodeType -notin $enabledNodeTypes) {
+  throw 'The quota-safe D4ads_v6 node type is not enabled for this subscription.'
 }
-$pipelineNodeType = if ('Standard_D2ads_v6' -in $availableNodeTypes) {
+$pipelineNodeType = if ('Standard_D2ads_v6' -in $enabledNodeTypes) {
   'Standard_D2ads_v6'
 } else {
   [string]@($nodeTypes.node_types | Where-Object {
-    $_.num_cores -eq 2 -and -not $_.is_deprecated -and $_.node_type_id -notmatch 'NC|ND|NV|GPU'
+    $_.num_cores -eq 2 -and @($_.node_info.status).Count -eq 0 -and
+      -not $_.is_deprecated -and $_.node_type_id -notmatch '^Standard_(NC|ND|NV)'
   } | Sort-Object node_type_id)[0].node_type_id
 }
 if (-not $pipelineNodeType) {
@@ -567,8 +569,8 @@ Write-PublicJson 'platform-configuration.json' ([ordered]@{
   primary_job_compute = @{
     requested_node_type = $requestedPrimaryNodeType
     preferred_node_type = $primaryNodeType
-    flexible_alternate_node_types = @($flexibleAlternateNodeType)
-    adjustment_reason = 'THREE_TWO_VM_CAPACITY_ACQUISITION_FAILURES'
+    node_subscription_status = 'ENABLED'
+    adjustment_reason = 'LIVE_NODE_METADATA_AND_CAPACITY_FALLBACK'
     single_node = $true
     driver_count = 1
     worker_count = 0
