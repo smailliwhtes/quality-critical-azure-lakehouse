@@ -108,7 +108,21 @@ if ($LASTEXITCODE -ne 0) { throw 'Subscription what-if failed.' }
 
 $expectedTypes = (Get-Content -LiteralPath (Join-Path $repoRoot 'infra\expected_resource_types.json') -Raw | ConvertFrom-Json).resource_types
 $whatIf = $whatIfRaw | ConvertFrom-Json
-$actualTypes = @($whatIf.properties.changes | ForEach-Object { $_.resourceId -replace '^.*/providers/([^/]+/[^/]+).*$','$1' } | Sort-Object -Unique)
+$whatIfChanges = if ($whatIf.PSObject.Properties.Name -contains 'changes') {
+  @($whatIf.changes)
+} elseif (
+  $whatIf.PSObject.Properties.Name -contains 'properties' -and
+  $whatIf.properties.PSObject.Properties.Name -contains 'changes'
+) {
+  @($whatIf.properties.changes)
+} else {
+  throw 'Subscription what-if response did not contain a recognized changes collection.'
+}
+$destructiveChanges = @($whatIfChanges | Where-Object { $_.changeType -eq 'Delete' })
+if ($destructiveChanges.Count -gt 0) {
+  throw 'Subscription what-if contains a destructive deletion; deployment stopped.'
+}
+$actualTypes = @($whatIfChanges | ForEach-Object { $_.resourceId -replace '^.*/providers/([^/]+/[^/]+).*$','$1' } | Sort-Object -Unique)
 $unexpected = @($actualTypes | Where-Object { $_ -and $_ -notin $expectedTypes })
 if ($unexpected.Count -gt 0) {
   throw "What-if contains unexpected resource types: $($unexpected -join ', ')"
