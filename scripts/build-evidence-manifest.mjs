@@ -154,6 +154,7 @@ const definitions = {
     receipt: "preflight.json",
     validation: "tests/unit/test_evidence_manifest.py",
     runId: "deterministic-publication-build",
+    commit: () => "3251bf2b9f7099f73056c7f772e8d6dc2de901e1",
     notes: "A single validated content model and generated manifest drive the README, site, evidence explorer, and 32-page document.",
     limitation: "Generated explanatory panels are labeled as generated artifacts and are not represented as platform screenshots.",
   },

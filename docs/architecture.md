@@ -23,6 +23,19 @@ Bronze preserves source fidelity and provenance. Silver enforces types, business
 
 The cross-cutting trust path is Microsoft Entra managed identity to scoped Azure RBAC, then Access Connector to ADLS and Unity Catalog storage objects. Key Vault is reserved for the Event Hubs credential only if the runtime requires it.
 
+## Architecture decision index
+
+The detailed decision dossier is [docs/decisions](decisions/README.md). The short version:
+
+| Decision | Accepted trade-off |
+| --- | --- |
+| Split batch and event ingestion by workload shape | Two ingress control planes instead of one generic path |
+| Preserve an append-only, source-fidelity Bronze contract | Additional metadata and storage before conformance |
+| Apply observe/allow, reason-coded quarantine, and hard-fail quality policies | More explicit contract and routing logic |
+| Use Lakeflow AUTO CDC for executed SCD Type 2 history | Databricks declarative semantics instead of maximum portability |
+| Govern through named table operations | Namespace and permission discipline |
+| Measure performance instead of assuming optimization | Benchmark time and possible negative results |
+
 ## Executed compute boundary
 
 The workspace ran in East US 2 on the Portal-confirmed `trial` SKU and Hybrid mode. East US 2 capacity and live node metadata did not support the planned `Standard_DS3_v2` shape. The bounded fallback used one single-node `Standard_D4ads_v6` job cluster (4 vCPUs) and one single-node `Standard_D2ads_v6` Lakeflow cluster (2 vCPUs), for a peak verified plan of 6 vCPUs inside the 10-vCPU quota. Databricks Runtime was `17.3.x-scala2.13` (17.3 LTS, Spark 4.0.0, Scala 2.13).

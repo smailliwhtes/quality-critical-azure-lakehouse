@@ -1,9 +1,12 @@
 import { readFile, stat } from "node:fs/promises";
 import { resolve } from "node:path";
+import { pathToFileURL } from "node:url";
 import { PDFDocument, PDFName } from "pdf-lib";
+import * as pdfjs from "pdfjs-dist/legacy/build/pdf.mjs";
 
 const root = resolve(import.meta.dirname, "..");
 const path = resolve(root, "portfolio/pdf/part4-azure-data-engineering-portfolio.pdf");
+const standardFontDataUrl = `${pathToFileURL(resolve(root, "node_modules/pdfjs-dist/standard_fonts")).href}/`;
 const bytes = await readFile(path);
 const pdf = await PDFDocument.load(bytes, { updateMetadata: false });
 const info = await stat(path);
@@ -18,6 +21,29 @@ if (info.size >= 100 * 1024 * 1024) throw new Error("PDF exceeds the 100 MB publ
 for (const [index, page] of pdf.getPages().entries()) {
   const { width, height } = page.getSize();
   if (width !== 648 || height !== 810) throw new Error(`Page ${index + 1} has inconsistent dimensions.`);
+}
+
+const textDocument = await pdfjs.getDocument({
+  data: new Uint8Array(bytes),
+  disableWorker: true,
+  standardFontDataUrl,
+  verbosity: pdfjs.VerbosityLevel.ERRORS,
+}).promise;
+let extractedText = "";
+for (let pageNumber = 1; pageNumber <= textDocument.numPages; pageNumber += 1) {
+  const page = await textDocument.getPage(pageNumber);
+  const text = await page.getTextContent();
+  extractedText += ` ${text.items.map((item) => "str" in item ? item.str : "").join(" ")}`;
+}
+
+for (const phrase of [
+  "Architecture decisions",
+  "Executed lifecycle",
+  "Production readiness",
+  "Future AI Engineering Portfolio",
+  "not implemented in Part 4",
+]) {
+  if (!extractedText.includes(phrase)) throw new Error(`PDF is missing required masterpiece phrase: ${phrase}`);
 }
 
 console.log(`Validated 32 pages, bookmarks, metadata, dimensions, and ${(info.size / 1024 / 1024).toFixed(2)} MB size.`);

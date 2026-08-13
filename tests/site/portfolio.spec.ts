@@ -21,12 +21,29 @@ for (const viewport of viewports) {
     await expect(page.getByRole("heading", { name: "Quality-Critical Azure Lakehouse", exact: true })).toBeVisible();
     await expect(page.locator(".hero-card")).toHaveCount(6);
     await expect(page.locator(".hero-card__visual img")).toHaveCount(6);
+    await expect(page.locator(".decision-card")).toHaveCount(6);
+    await expect(page.locator(".timeline-step")).toHaveCount(8);
+    await expect(page.locator(".readiness-row")).toHaveCount(6);
+    await expect(page.locator(".future-consumer-boundary")).toBeVisible();
     await expect(page.locator(".journey-card")).toHaveCount(19);
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
     expect(overflow).toBeLessThanOrEqual(1);
     expect(errors).toEqual([]);
   });
 }
+
+test("architecture decisions connect recruiter claims to real evidence", async ({ page }) => {
+  await page.goto("./", { waitUntil: "networkidle" });
+  await expect(page.getByRole("link", { name: "Decisions" })).toBeVisible();
+  await page.getByRole("link", { name: "Decisions" }).click();
+  await expect(page.getByRole("heading", { name: "Architecture decisions and trade-offs" })).toBeVisible();
+  const decisions = page.locator("#architecture-decisions");
+  await expect(decisions.getByRole("heading", { name: "Split ingestion by workload shape" })).toBeVisible();
+  await expect(decisions.getByRole("link", { name: "Evidence: ADF batch ingestion" })).toBeVisible();
+  await expect(decisions.getByRole("link", { name: "Evidence: Event Hubs streaming" })).toBeVisible();
+  await expect(decisions.getByText("39.009% slower")).toBeVisible();
+  await expect(page.locator("#future-consumer-boundary").getByText("not implemented in Part 4")).toBeVisible();
+});
 
 test("evidence explorer is keyboard-operable and filters records", async ({ page }) => {
   await page.goto("./", { waitUntil: "networkidle" });

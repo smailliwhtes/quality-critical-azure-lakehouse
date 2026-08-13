@@ -3,7 +3,17 @@ import { resolve } from "node:path";
 
 const root = resolve(import.meta.dirname, "..");
 const content = JSON.parse(await readFile(resolve(root, "portfolio/content/project.json"), "utf8"));
-const { project, capabilities, data_profile: dataProfile, gold_objects: goldObjects, boundaries } = content;
+const {
+  project,
+  capabilities,
+  data_profile: dataProfile,
+  gold_objects: goldObjects,
+  architecture_decisions: architectureDecisions,
+  execution_timeline: executionTimeline,
+  production_readiness: productionReadiness,
+  future_consumer_boundary: futureConsumerBoundary,
+  boundaries,
+} = content;
 const teardownVerified = content.engineering_journey.find((item) => item.id === "teardown")?.status === "VERIFIED";
 const teardownBoundary = teardownVerified
   ? "Exact-scope teardown is `VERIFIED`: Azure authoritatively read back the isolated resource group, its Databricks-managed resource group, and the Part 4 budget as absent."
@@ -12,6 +22,10 @@ const teardownBoundary = teardownVerified
 const capabilityLine = capabilities.map((item) => `\`${item}\``).join(" · ");
 const profileRows = dataProfile.map((item) => `| ${item.label} | ${item.value} |`).join("\n");
 const goldRows = goldObjects.map((item) => `| \`${item.name}\` | ${item.grain} |`).join("\n");
+const decisionRows = architectureDecisions.map((item) => `| [${item.title}](docs/decisions/${item.id === "workload-shaped-ingestion" ? "batch-and-streaming-ingestion" : item.id === "source-fidelity-bronze" ? "bronze-provenance" : item.id === "risk-based-quality-policy" ? "quality-policy-routing" : item.id === "declarative-temporal-history" ? "temporal-history-cdc" : item.id === "governed-table-operations" ? "governed-table-operations" : "evidence-led-performance"}.md) | ${item.decision} | ${item.tradeoff} |`).join("\n");
+const timelineRows = executionTimeline.map((item) => `| ${item.sequence} | ${item.title} | ${item.outcome} | \`${item.status}\` |`).join("\n");
+const readinessRows = productionReadiness.map((item) => `| ${item.category} | ${item.executed_proof} | ${item.production_extension} | \`${item.hardening_status}\` |`).join("\n");
+const futureRows = futureConsumerBoundary.gold_contracts.map((item) => `| \`${item.gold_object}\` | ${item.grain} | ${item.keys} | ${item.quality_boundary} |`).join("\n");
 
 const readme = `# ${project.title}
 
@@ -75,6 +89,36 @@ Every Gold object also declares keys, upstream lineage, and executable validatio
 - Processing: reusable PySpark → Silver validation and quarantine → CDC/SCD2 → Gold products.
 - Control plane: managed identities, Access Connector, Unity Catalog, Key Vault, Monitor, Log Analytics, GitHub Actions, budgets, and teardown verification.
 
+## Architecture decisions and trade-offs
+
+| Architecture choice | Decision | Cost accepted |
+| --- | --- | --- |
+${decisionRows}
+
+The full decision dossier is [\`docs/decisions/README.md\`](docs/decisions/README.md). The public site renders the same six decisions immediately after the six-card recruiter path.
+
+## Executed lifecycle
+
+| # | Stage | Outcome | Evidence state |
+| ---: | --- | --- | --- |
+${timelineRows}
+
+## Production readiness
+
+| Category | Executed proof | Production extension | Extension state |
+| --- | --- | --- | --- |
+${readinessRows}
+
+This table intentionally does not say the torn-down Trial environment is enterprise production. It shows portfolio-grade production engineering proof beside explicit blueprint work.
+
+## Gold-to-future-consumer boundary
+
+${futureConsumerBoundary.statement}
+
+| Gold object | Grain | Keys | Quality boundary |
+| --- | --- | --- | --- |
+${futureRows}
+
 ## Reproduce locally
 
 Prerequisites are Python 3.12, JDK 17, Node 24, Azure CLI with Bicep, and the Databricks CLI.
@@ -104,6 +148,9 @@ Live deployment intentionally fails closed unless \`PART4_BUDGET_USD\` is numeri
 ## Technical documentation
 
 - [Architecture](docs/architecture.md)
+- [Architecture decisions](docs/architecture-decisions.md)
+- [Decision dossier](docs/decisions/README.md)
+- [Production readiness](docs/production-readiness.md)
 - [Security](docs/security.md)
 - [Data contracts](docs/data-contracts.md)
 - [Quality rules](docs/quality-rules.md)
@@ -128,7 +175,7 @@ Azure Data Engineering Evidence Portfolio: Quality Critical Lakehouse
 
 ## Featured description
 
-I built and executed a reproducible Azure lakehouse spanning Bicep, ADLS Gen2, Data Factory, Event Hubs, Azure Databricks, Unity Catalog, PySpark, Delta Lake, Lakeflow, Azure Monitor, CI/CD, failure recovery, performance measurement, governance, and cost control${teardownVerified ? ", with authoritative teardown verification" : ""}. The case study links every major claim to implementation, validation, execution status, and sanitized evidence.
+I built and executed a reproducible Azure lakehouse, but the strongest part of the case study is the architecture judgment behind it: why batch files and telemetry events use different ingress paths, why Bronze preserves source fidelity before conformance, why bad records do not all receive the same consequence, why AUTO CDC was chosen for executed SCD Type 2 history, why governed table operations matter, and why a proposed Spark optimization was rejected after measurement.
 
 ## Featured link
 
@@ -136,17 +183,19 @@ ${project.site}
 
 ## Post draft
 
-I built Part 4 of my Azure Data Engineering portfolio around a question that matters in any quality critical operation: can a published KPI be traced all the way back to the batch record or sensor event that created it?
+I built Part 4 of my Azure Data Engineering portfolio around a question that matters in any quality critical operation: can a published KPI be traced all the way back to the batch record or sensor event that created it, and can I defend why the platform was designed this way?
 
-Azure Data Factory copied six commit pinned files and reconciled 30,000 batch quality rows. Event Hubs carried exactly 20,000 deterministic telemetry messages into checkpointed Structured Streaming. PySpark and Delta Lake then moved both paths through Bronze provenance, Silver validation and quarantine, Lakeflow AUTO CDC for SCD Type 2 history, and six documented Gold data products.
+Azure Data Factory copied six commit pinned files and reconciled 30,000 batch quality rows. Event Hubs carried exactly 20,000 deterministic telemetry messages into checkpointed Structured Streaming. The split ingress was deliberate: files and events expose different monitoring, recovery, and evidence signals.
 
-The ten task Lakeflow Jobs graph completed on Azure Databricks Trial. Unity Catalog recorded table and column lineage, applied managed storage and scoped grants, and demonstrated column masking. I then injected a reserved quality failure, captured the real failed task and diagnostic, repaired only the affected path, and proved the recovered content matched the clean baseline.
+PySpark and Delta Lake then moved both paths through an append-only, source-fidelity Bronze preservation contract, Silver validation, reason-coded quarantine, Lakeflow AUTO CDC for SCD Type 2 history, and six documented Gold data products. Unity Catalog recorded table and column lineage, applied managed storage and scoped grants, and demonstrated column masking.
+
+I injected a reserved quality failure, captured the real failed task and diagnostic, repaired the affected and dependent recovery path while preserving unaffected successful upstream work, and proved the recovered content matched the clean baseline.
 
 I also ran a separate five million row Spark experiment three times per implementation on the same compute. The broadcast plan produced the same result hash but was 39.009 percent slower by median wall time. I published that result because honest measurement is more useful than a predetermined optimization story.
 
 Architecture, code, tests, platform captures, machine receipts, validation results, UTC timestamps, commit references, and SHA256 hashes are connected at the claim level. Cost telemetry remained pending settlement, so no zero or estimate is invented.${teardownVerified ? " Azure also confirmed the isolated resource groups and Part 4 budget were absent after exact scope teardown." : ""}
 
-The full case study includes a 90 second recruiter path, a technical deep dive, a searchable evidence explorer, and a 32 page document.
+The full case study includes a 90 second recruiter path, an architecture decision dossier, a technical deep dive, a searchable evidence explorer, a governed Gold boundary for a future AI Engineering portfolio, and a 32 page document.
 
 Portfolio: ${project.site}
 

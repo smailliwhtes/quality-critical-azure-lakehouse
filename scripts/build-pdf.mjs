@@ -144,6 +144,107 @@ function drawImageFrame(page, image) {
   page.drawImage(image, { x: frame.x + (frame.width - width) / 2, y: frame.y + (frame.height - height) / 2, width, height });
 }
 
+function drawCompactCard(page, { x, y, width, height, label, title, body, accent }, fonts) {
+  page.drawRectangle({ x, y, width, height, color: palette.panel, borderColor: palette.border, borderWidth: 0.8 });
+  page.drawRectangle({ x, y: y + height - 4, width, height: 4, color: accent });
+  page.drawText(label, { x: x + 12, y: y + height - 20, font: fonts.bold, size: 7, color: accent, characterSpacing: 0.6 });
+  drawWrapped(page, title, { x: x + 12, top: pageHeight - y - height + 26, font: fonts.bold, size: 10, color: palette.white, maxWidth: width - 24, lineHeight: 12, maxLines: 2 });
+  drawWrapped(page, body, { x: x + 12, top: pageHeight - y - height + 54, font: fonts.regular, size: 7.7, color: palette.muted, maxWidth: width - 24, lineHeight: 10.5, maxLines: 3 });
+}
+
+function drawDecisionMap(page, fonts) {
+  page.drawText("Architecture decisions", { x: 52, y: 515, font: fonts.bold, size: 11, color: palette.teal });
+  content.architecture_decisions.forEach((item, index) => {
+    const col = index % 2;
+    const row = Math.floor(index / 2);
+    drawCompactCard(page, {
+      x: 52 + col * 276,
+      y: 403 - row * 92,
+      width: 260,
+      height: 80,
+      label: `DECISION ${String(item.sequence).padStart(2, "0")}`,
+      title: item.title,
+      body: item.tradeoff,
+      accent: index % 2 ? palette.blue : palette.teal,
+    }, fonts);
+  });
+}
+
+function drawExecutedLifecycle(page, fonts) {
+  page.drawText("Executed lifecycle", { x: 52, y: 515, font: fonts.bold, size: 11, color: palette.teal });
+  content.execution_timeline.forEach((item, index) => {
+    const col = index % 2;
+    const row = Math.floor(index / 2);
+    drawCompactCard(page, {
+      x: 52 + col * 276,
+      y: 427 - row * 70,
+      width: 260,
+      height: 60,
+      label: `STAGE ${item.sequence}`,
+      title: item.title,
+      body: item.outcome,
+      accent: palette.blue,
+    }, fonts);
+  });
+}
+
+function drawProductionReadiness(page, fonts) {
+  page.drawText("Production readiness", { x: 52, y: 515, font: fonts.bold, size: 11, color: palette.teal });
+  content.production_readiness.forEach((item, index) => {
+    const col = index % 2;
+    const row = Math.floor(index / 2);
+    drawCompactCard(page, {
+      x: 52 + col * 276,
+      y: 403 - row * 92,
+      width: 260,
+      height: 80,
+      label: item.hardening_status,
+      title: item.category,
+      body: item.production_extension,
+      accent: palette.amber,
+    }, fonts);
+  });
+}
+
+function drawFutureBoundary(page, fonts) {
+  page.drawText("Future AI Engineering Portfolio", { x: 52, y: 515, font: fonts.bold, size: 11, color: palette.teal });
+  drawWrapped(page, content.future_consumer_boundary.interface_rule, { x: 52, top: 305, font: fonts.regular, size: 10, color: palette.muted, maxWidth: 544, lineHeight: 14, maxLines: 3 });
+  content.future_consumer_boundary.gold_contracts.forEach((item, index) => {
+    const col = index % 3;
+    const row = Math.floor(index / 3);
+    drawCompactCard(page, {
+      x: 52 + col * 184,
+      y: 290 - row * 97,
+      width: 168,
+      height: 84,
+      label: "GOVERNED GOLD",
+      title: item.gold_object,
+      body: `${item.grain} Keys: ${item.keys}`,
+      accent: palette.teal,
+    }, fonts);
+  });
+}
+
+function drawSpecialPage(page, item, fonts) {
+  if (item.id === "architecture-decisions") {
+    drawDecisionMap(page, fonts);
+    return true;
+  }
+  if (item.id === "executed-lifecycle") {
+    drawExecutedLifecycle(page, fonts);
+    return true;
+  }
+  if (item.id === "production-readiness") {
+    drawProductionReadiness(page, fonts);
+    return true;
+  }
+  if (item.id === "future-consumer-boundary") {
+    drawFutureBoundary(page, fonts);
+    return true;
+  }
+  return false;
+}
+
 function drawFooter(page, index, fonts) {
   page.drawLine({ start: { x: 52, y: 91 }, end: { x: 596, y: 91 }, thickness: 0.7, color: palette.border });
   page.drawText("MICHAEL SETH WILLIAMS", { x: 52, y: 65, font: fonts.bold, size: 8, color: palette.slate, characterSpacing: 1.2 });
@@ -193,9 +294,12 @@ for (const [index, item] of content.pdf_pages.entries()) {
   const page = pdf.addPage([pageWidth, pageHeight]);
   pages.push(page);
   drawHeader(page, item, index, fonts);
-  const screenshot = await maybeEmbedScreenshot(pdf, item);
-  if (screenshot) drawImageFrame(page, screenshot);
-  else drawEvidenceFrame(page, item, fonts, index);
+  const renderedSpecial = drawSpecialPage(page, item, fonts);
+  if (!renderedSpecial) {
+    const screenshot = await maybeEmbedScreenshot(pdf, item);
+    if (screenshot) drawImageFrame(page, screenshot);
+    else drawEvidenceFrame(page, item, fonts, index);
+  }
 
   if (item.id === "repository") {
     page.drawRectangle({ x: 52, y: 108, width: 544, height: 30, color: palette.panel2, borderColor: palette.blue, borderWidth: 0.8 });

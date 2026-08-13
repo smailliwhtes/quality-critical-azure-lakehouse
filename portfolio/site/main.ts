@@ -4,6 +4,7 @@ import evidence from "../../evidence/public/evidence_manifest.json";
 
 type Status = "VERIFIED" | "DEMONSTRATED" | "PRODUCTION_BLUEPRINT";
 type Journey = typeof content.engineering_journey[number];
+type ArchitectureDecision = typeof content.architecture_decisions[number];
 type EvidenceArtifact = typeof evidence.artifacts[number];
 
 const root = document.querySelector<HTMLDivElement>("#app");
@@ -13,6 +14,7 @@ const repo = content.project.repository;
 const base = import.meta.env.BASE_URL;
 const architecture = `${base}assets/architecture/quality-critical-lakehouse.png`;
 const pdf = `${base}downloads/part4-azure-data-engineering-portfolio.pdf`;
+const evidenceById = new Map(evidence.artifacts.map((artifact) => [artifact.artifact_id, artifact]));
 const heroScreenshots: Record<string, string> = {
   architecture: "01-architecture.png",
   "pyspark-transformation": "02-pyspark-transformation.png",
@@ -20,6 +22,35 @@ const heroScreenshots: Record<string, string> = {
   "unity-catalog-lineage": "04-unity-catalog-lineage.png",
   "failure-repair": "05-failure-repair.png",
   "performance-comparison": "06-performance-comparison.png",
+};
+const evidenceLabels: Record<string, string> = {
+  "architecture-deployment": "Azure deployment",
+  "identity-security": "Identity and security",
+  adls: "ADLS Gen2 layout",
+  adf: "ADF batch ingestion",
+  "event-hubs": "Event Hubs streaming",
+  "unity-catalog": "Unity Catalog governance",
+  bronze: "Bronze provenance",
+  "quality-quarantine": "Quality and quarantine",
+  silver: "Silver conformance",
+  scd2: "AUTO CDC SCD2",
+  gold: "Gold products",
+  orchestration: "Lakeflow Jobs DAG",
+  lineage: "Unity Catalog lineage",
+  "failure-recovery": "Failure and repair",
+  performance: "Spark performance",
+  "monitoring-cost": "Monitoring and cost",
+  cicd: "CI/CD validation",
+  teardown: "Verified teardown",
+  evidence: "Evidence methodology",
+};
+const decisionDocs: Record<string, string> = {
+  "workload-shaped-ingestion": "docs/decisions/batch-and-streaming-ingestion.md",
+  "source-fidelity-bronze": "docs/decisions/bronze-provenance.md",
+  "risk-based-quality-policy": "docs/decisions/quality-policy-routing.md",
+  "declarative-temporal-history": "docs/decisions/temporal-history-cdc.md",
+  "governed-table-operations": "docs/decisions/governed-table-operations.md",
+  "evidence-led-performance": "docs/decisions/evidence-led-performance.md",
 };
 
 function esc(value: string | number) {
@@ -41,7 +72,13 @@ function codeUrl(path: string) {
 }
 
 function evidenceFor(item: Journey): EvidenceArtifact | undefined {
-  return evidence.artifacts.find((artifact) => artifact.artifact_id === item.id);
+  return evidenceById.get(item.id);
+}
+
+function evidenceLink(artifactId: string) {
+  const artifact = evidenceById.get(artifactId);
+  const label = evidenceLabels[artifactId] ?? artifact?.claim ?? artifactId.replaceAll("-", " ");
+  return `<a href="#evidence-${esc(artifactId)}">Evidence: ${esc(label)}</a>`;
 }
 
 const capabilityChips = content.capabilities.map((item) => `<li>${esc(item)}</li>`).join("");
@@ -61,6 +98,48 @@ const heroCards = content.hero_path.map((item, index) => `
     <footer>${status(item.status as Status)}<a href="#evidence-explorer">Inspect evidence <span aria-hidden="true">→</span></a></footer>
   </article>`).join("");
 
+const decisionCards = content.architecture_decisions.map((item: ArchitectureDecision) => `
+  <article class="decision-card" id="decision-${esc(item.id)}" data-status="${esc(item.status)}">
+    <div class="decision-card__top"><span>${String(item.sequence).padStart(2, "0")}</span>${status(item.status as Status)}</div>
+    <p class="decision-card__state">Decision state: ${esc(item.decision_state)}</p>
+    <h3>${esc(item.title)}</h3>
+    <div class="decision-card__grid">
+      <div><h4>Decision</h4><p>${esc(item.decision)}</p></div>
+      <div><h4>Why</h4><p>${esc(item.outcome)}</p></div>
+      <div><h4>Rejected alternative</h4><p>${esc(item.rejected_alternative)}</p></div>
+      <div><h4>Trade-off</h4><p>${esc(item.tradeoff)}</p></div>
+    </div>
+    <div class="decision-card__evidence">
+      ${item.evidence_ids.map((artifactId) => evidenceLink(artifactId)).join("")}
+      <a href="${esc(codeUrl(decisionDocs[item.id]))}">Full decision record</a>
+    </div>
+  </article>`).join("");
+
+const timelineSteps = content.execution_timeline.map((item) => `
+  <li class="timeline-step" data-status="${esc(item.status)}">
+    <span class="timeline-step__number">${String(item.sequence).padStart(2, "0")}</span>
+    <div>
+      <h3>${esc(item.title)}</h3>
+      <p>${esc(item.outcome)}</p>
+      <div class="timeline-step__links">${status(item.status as Status)}${evidenceLink(item.evidence_id)}</div>
+    </div>
+  </li>`).join("");
+
+const readinessRows = content.production_readiness.map((item) => `
+  <tr class="readiness-row">
+    <th scope="row">${esc(item.category)}</th>
+    <td><span class="readiness-label">Executed proof</span><p>${esc(item.executed_proof)}</p>${status(item.proof_status as Status)}${evidenceLink(item.evidence_id)}</td>
+    <td><span class="readiness-label">Production extension</span><p>${esc(item.production_extension)}</p>${status(item.hardening_status as Status)}</td>
+  </tr>`).join("");
+
+const futureBoundaryCards = content.future_consumer_boundary.gold_contracts.map((item) => `
+  <article class="gold-boundary-card">
+    <h3>${esc(item.gold_object)}</h3>
+    <p><strong>Grain:</strong> ${esc(item.grain)}</p>
+    <p><strong>Keys:</strong> ${esc(item.keys)}</p>
+    <p><strong>Quality:</strong> ${esc(item.quality_boundary)}</p>
+  </article>`).join("");
+
 const journeyCards = content.engineering_journey.map((item, index) => `
   <article class="journey-card" data-status="${esc(item.status)}">
     <div class="journey-card__top"><span>${String(index + 1).padStart(2, "0")}</span>${status(item.status as Status)}</div>
@@ -78,7 +157,7 @@ const evidenceRows = content.engineering_journey.map((item) => {
   const commit = artifact?.commit_sha && artifact.commit_sha !== "PENDING" ? artifact.commit_sha.slice(0, 8) : "pending";
   const commitUrl = artifact?.commit_sha && artifact.commit_sha !== "PENDING" ? `${repo}/commit/${artifact.commit_sha}` : `${repo}/commits/main`;
   return `
-    <article class="evidence-row" data-search="${esc(`${artifact?.service ?? ""} ${item.title} ${item.summary} ${item.code} ${item.status} ${limitation}`.toLowerCase())}" data-status="${esc(item.status)}">
+    <article class="evidence-row" id="evidence-${esc(artifact?.artifact_id ?? item.id)}" data-search="${esc(`${artifact?.service ?? ""} ${item.title} ${item.summary} ${item.code} ${item.status} ${limitation}`.toLowerCase())}" data-status="${esc(item.status)}">
       <div class="evidence-row__claim"><span class="evidence-row__service">${esc(artifact?.service ?? item.id.replaceAll("-", " "))}</span><h3>${esc(item.title)}</h3><p>${esc(item.summary)}</p></div>
       <div class="evidence-row__state">${status(item.status as Status)}<p>${esc(limitation)}</p></div>
       <div class="evidence-row__links">${screenshot}${receipt}<a href="${esc(codeUrl(item.code))}">Code</a>${validation}<a href="${esc(commitUrl)}">Commit: ${esc(commit)}</a></div>
@@ -90,6 +169,7 @@ root.innerHTML = `
     <a class="brand" href="#top" aria-label="Quality-Critical Azure Lakehouse home"><span>MSW</span><strong>Azure Data Engineering</strong></a>
     <nav aria-label="Primary navigation">
       <a href="#recruiter-path">90-second path</a>
+      <a href="#architecture-decisions">Decisions</a>
       <a href="#engineering-journey">Deep dive</a>
       <a href="#evidence-explorer">Evidence</a>
       <a class="nav-cta" href="${pdf}">Download PDF</a>
@@ -119,6 +199,31 @@ root.innerHTML = `
     <section class="section recruiter" id="recruiter-path" aria-labelledby="recruiter-title">
       <div class="section-heading"><div><p class="eyebrow">DEPTH 01 / RECRUITER VIEW</p><h2 id="recruiter-title">The complete signal in six artifacts</h2></div><p>Architecture, transformation, orchestration, governance, recovery, and performance. Every card states what I did, why it matters, and what the current evidence can prove.</p></div>
       <div class="hero-grid">${heroCards}</div>
+    </section>
+
+    <section class="section decisions" id="architecture-decisions" aria-labelledby="decisions-title">
+      <div class="section-heading"><div><p class="eyebrow">ARCHITECTURE JUDGMENT</p><h2 id="decisions-title">Architecture decisions and trade-offs</h2></div><p>These records explain why the executed Azure platform was built this way, which alternatives were rejected, what each choice cost, and which existing evidence supports it.</p></div>
+      <div class="decision-grid">${decisionCards}</div>
+    </section>
+
+    <section class="section lifecycle" id="executed-lifecycle" aria-labelledby="lifecycle-title">
+      <div class="section-heading"><div><p class="eyebrow">EXECUTED LIFECYCLE</p><h2 id="lifecycle-title">Eight stages from scope to teardown</h2></div><p>The timeline presents the data-platform lifecycle, not just an ETL path: cost/identity, provisioning, ingestion, Bronze, conformance, Gold, failure/repair/performance, and verified closeout.</p></div>
+      <ol class="timeline-list">${timelineSteps}</ol>
+    </section>
+
+    <section class="section readiness" id="production-readiness" aria-labelledby="readiness-title">
+      <div class="section-heading"><div><p class="eyebrow">PRODUCTION READINESS</p><h2 id="readiness-title">Bounded proof versus production extension</h2></div><p>The portfolio proves production engineering behaviors under a Trial boundary. Enterprise hardening remains explicit and labeled as blueprint work, not executed proof.</p></div>
+      <div class="readiness-table-wrap">
+        <table class="readiness-table">
+          <thead><tr><th scope="col">Category</th><th scope="col">Executed portfolio proof</th><th scope="col">Production extension</th></tr></thead>
+          <tbody>${readinessRows}</tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="section future-consumer-boundary" id="future-consumer-boundary" aria-labelledby="future-boundary-title">
+      <div class="section-heading"><div><p class="eyebrow">GOLD CONSUMER BOUNDARY</p><h2 id="future-boundary-title">${esc(content.future_consumer_boundary.title)}</h2></div><p>${esc(content.future_consumer_boundary.statement)} ${esc(content.future_consumer_boundary.interface_rule)}</p></div>
+      <div class="gold-boundary-grid">${futureBoundaryCards}</div>
     </section>
 
     <section class="section journey" id="engineering-journey" aria-labelledby="journey-title">

@@ -5,6 +5,7 @@ ROOT = Path(__file__).resolve().parents[2]
 
 REQUIRED_DOCS = {
     "architecture.md",
+    "architecture-decisions.md",
     "security.md",
     "data-contracts.md",
     "quality-rules.md",
@@ -22,6 +23,24 @@ HERO_IDS = {
     "unity-catalog-lineage",
     "failure-repair",
     "performance-comparison",
+}
+
+DECISION_IDS = {
+    "workload-shaped-ingestion",
+    "source-fidelity-bronze",
+    "risk-based-quality-policy",
+    "declarative-temporal-history",
+    "governed-table-operations",
+    "evidence-led-performance",
+}
+
+READINESS_IDS = {
+    "network-isolation",
+    "compute-throughput-scale",
+    "observability-alerting",
+    "resilience-disaster-recovery",
+    "identity-access-governance",
+    "finops-operating-ownership",
 }
 
 
@@ -73,6 +92,111 @@ def test_required_technical_documents_and_linkedin_copy_exist() -> None:
     assert "Azure Data Engineering Evidence Portfolio" in linkedin
     assert "Featured description" in linkedin
     assert "Post draft" in linkedin
+
+
+def test_architecture_decisions_are_complete_and_evidence_linked() -> None:
+    content = load_content()
+    evidence = json.loads(
+        (ROOT / "evidence/public/evidence_manifest.json").read_text(encoding="utf-8")
+    )
+    evidence_ids = {item["artifact_id"] for item in evidence["artifacts"]}
+
+    decisions = content["architecture_decisions"]
+
+    assert len(decisions) == 6
+    assert {item["id"] for item in decisions} == DECISION_IDS
+    assert [item["sequence"] for item in decisions] == [1, 2, 3, 4, 5, 6]
+    for item in decisions:
+        assert item["decision_state"] == "ACCEPTED"
+        assert item["status"] in {"VERIFIED", "DEMONSTRATED", "PRODUCTION_BLUEPRINT"}
+        assert item["title"].strip()
+        assert item["context"].strip()
+        assert item["decision"].strip()
+        assert item["rejected_alternative"].strip()
+        assert item["tradeoff"].strip()
+        assert item["outcome"].strip()
+        assert item["production_extension"].strip()
+        assert item["reconsider_when"].strip()
+        assert set(item["evidence_ids"]) <= evidence_ids
+        assert item["code_paths"]
+
+
+def test_execution_timeline_and_production_readiness_are_bounded() -> None:
+    content = load_content()
+    evidence = json.loads(
+        (ROOT / "evidence/public/evidence_manifest.json").read_text(encoding="utf-8")
+    )
+    evidence_ids = {item["artifact_id"] for item in evidence["artifacts"]}
+
+    timeline = content["execution_timeline"]
+    readiness = content["production_readiness"]
+
+    assert len(timeline) == 8
+    assert [item["sequence"] for item in timeline] == list(range(1, 9))
+    for item in timeline:
+        assert item["title"].strip()
+        assert item["outcome"].strip()
+        assert set(item["decision_ids"]) <= DECISION_IDS
+        assert item["evidence_id"] in evidence_ids
+        assert item["status"] in {"VERIFIED", "DEMONSTRATED", "PRODUCTION_BLUEPRINT"}
+
+    assert len(readiness) == 6
+    assert {item["id"] for item in readiness} == READINESS_IDS
+    for item in readiness:
+        assert item["executed_proof"].strip()
+        assert item["proof_status"] in {"VERIFIED", "DEMONSTRATED", "PRODUCTION_BLUEPRINT"}
+        assert item["production_extension"].strip()
+        assert item["hardening_status"] == "PRODUCTION_BLUEPRINT"
+        assert item["evidence_id"] in evidence_ids
+
+
+def test_future_consumer_boundary_references_gold_without_ai_execution_claims() -> None:
+    content = load_content()
+    boundary = content["future_consumer_boundary"]
+    gold_names = {item["name"] for item in content["gold_objects"]}
+    forbidden_claims = {
+        "model training",
+        "feature store",
+        "embeddings",
+        "vector database",
+        "rag",
+        "model serving",
+        "mlflow",
+        "azure ai services",
+    }
+    public_text = json.dumps(boundary, sort_keys=True).lower()
+
+    assert boundary["status"] == "PRODUCTION_BLUEPRINT"
+    assert boundary["implements_ai"] is False
+    assert {item["gold_object"] for item in boundary["gold_contracts"]} == gold_names
+    assert all(term not in public_text for term in forbidden_claims)
+    for item in boundary["gold_contracts"]:
+        assert item["grain"].strip()
+        assert item["keys"].strip()
+        assert item["time_semantics"].strip()
+        assert item["quality_boundary"].strip()
+        assert item["lineage"].strip()
+
+
+def test_decision_dossier_documents_exist() -> None:
+    decision_docs = {
+        "README.md",
+        "batch-and-streaming-ingestion.md",
+        "bronze-provenance.md",
+        "quality-policy-routing.md",
+        "temporal-history-cdc.md",
+        "governed-table-operations.md",
+        "evidence-led-performance.md",
+    }
+    docs_dir = ROOT / "docs" / "decisions"
+
+    assert {path.name for path in docs_dir.glob("*.md")} >= decision_docs
+    assert (ROOT / "docs" / "production-readiness.md").exists()
+    for filename in decision_docs:
+        text = (docs_dir / filename).read_text(encoding="utf-8")
+        assert "Decision state" in text
+        assert "Evidence state" in text
+        assert "Reconsider when" in text
 
 
 def test_architecture_assets_use_official_unmodified_icons() -> None:
